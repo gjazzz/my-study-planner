@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFlow — Gestione Scolastica</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * { font-family: 'Inter', sans-serif; }
+
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #16161f;
+            --bg-hover: #1c1c28;
+            --border: #2a2a3a;
+            --text-primary: #e4e4ef;
+            --text-secondary: #8888a0;
+            --accent: #8b5cf6;
+            --accent-light: #a78bfa;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            --danger: #ef4444;
+            --danger-glow: rgba(239, 68, 68, 0.15);
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* Glow effects */
+        .glow-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.2), 0 0 60px rgba(139, 92, 246, 0.05); }
+        .glow-danger { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3), 0 0 60px rgba(239, 68, 68, 0.08); }
+        .glow-success { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            width: 300px;
+            min-width: 300px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-item {
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-item:hover { background: var(--bg-hover); }
+        .sidebar-item.active {
+            background: var(--accent-glow);
+            border-left-color: var(--accent);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .card:hover { border-color: rgba(139, 92, 246, 0.3); }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .btn-ghost:hover {
+            color: var(--text-primary);
+            border-color: var(--accent);
+            background: var(--accent-glow);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+        .btn-danger:hover {
+            background: var(--danger-glow);
+            border-color: var(--danger);
+        }
+
+        /* Input */
+        .input-field {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            outline: none;
+        }
+        .input-field:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .input-field::placeholder { color: var(--text-secondary); }
+
+        /* Textarea */
+        textarea.input-field {
+            resize: vertical;
+            min-height: 120px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-danger { background: var(--danger-glow); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-warning { background: rgba(245, 158, 11, 0.12); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-success { background: rgba(34, 197, 94, 0.12); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
+        .badge-purple { background: var(--accent-glow); color: var(--accent-light); border: 1px solid rgba(139, 92, 246, 0.3); }
+
+        /* Checkbox custom */
+        .task-check {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            flex-shrink: 0;
+        }
+        .task-check:checked {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .task-check:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .task-check:hover { border-color: var(--accent); }
+
+        .task-done { text-decoration: line-through; color: var(--text-secondary); }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+            border-radius: 2px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast-success { background: #16a34a; color: white; }
+        .toast-error { background: #dc2626; color: white; }
+        .toast-info { background: #7c3aed; color: white; }
+
+        /* Modal overlay */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .modal-overlay.show { opacity: 1; pointer-events: all; }
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            max-width: 560px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            transform: scale(0.95);
+            transition: transform 0.2s ease;
+        }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); }
+            50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.3); }
+        }
+
+        /* Danger pulse for urgent tests */
+        @keyframes pulse-danger {
+            0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
+        }
+        .pulse-danger { animation: pulse-danger 2s infinite; }
+
+        /* Day card in schedule */
+        .day-card {
+            border-left: 3px solid var(--accent);
+            transition: all 0.2s ease;
+        }
+        .day-card:hover {
+            background: var(--bg-hover);
+        }
+        .day-card.today {
+            border-left-color: var(--success);
+            background: rgba(34, 197, 94, 0.04);
+        }
+        .day-card.past {
+            opacity: 0.6;
+            border-left-color: var(--text-secondary);
+        }
+
+        /* Empty state */
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 50;
+                transform: translateX(-100%);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 49;
+                display: none;
+            }
+            .mobile-overlay.show { display: block; }
+        }
+
+        /* Notification dot */
+        .notif-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            position: absolute;
+            top: -2px;
+            right: -2px;
+        }
+
+        /* Skeleton gradient line */
+        .gradient-line {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Mobile overlay -->
+    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Layout -->
+    <div class="flex h-screen overflow-hidden">
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar flex flex-col h-full">
+            <!-- Logo -->
+            <div class="p-5 flex items-center gap-3 border-b border-[var(--border)]">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
+                    <i data-lucide="brain" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">StudyFlow</h1>
+                    <p class="text-[11px] text-[var(--text-secondary)] -mt-0.5">Gestione Scolastica</p>
+                </div>
+            </div>
+
+            <!-- Add test button -->
+            <div class="p-4">
+                <button class="btn-primary w-full justify-center" onclick="openAddTestModal()">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Nuovo Test
+                </button>
+            </div>
+
+            <!-- Test list -->
+            <div class="flex-1 overflow-y-auto px-3 pb-4">
+                <p class="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider px-3 mb-2">I Tuoi Test</p>
+                <div id="sidebarTests"></div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-[var(--border)]">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white text-xs font-bold">S</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">Studente</p>
+                        <p class="text-[11px] text-[var(--text-secondary)]">Locale — dati salvati</p>
+                    </div>
+                    <button class="btn-ghost p-2" onclick="exportData()" title="Esporta dati">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Top bar -->
+            <header class="sticky top-0 z-40 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border)]">
+                <div class="flex items-center justify-between px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <button class="md:hidden btn-ghost p-2" onclick="toggleSidebar()">
+                            <i data-lucide="menu" class="w-5 h-5"></i>
+                        </button>
+                        <div>
+                            <h2 id="mainTitle" class="text-xl font-bold">Dashboard</h2>
+                            <p id="mainSubtitle" class="text-sm text-[var(--text-secondary)]">Panoramica dei tuoi test e piani di studio</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div id="statsBar" class="hidden sm:flex items-center gap-4 mr-4">
+                            <div class="text-center">
+                                <p id="statTotal" class="text-lg font-bold text-[var(--accent)]">0</p>
+                                <p class="text-[10px] text-[var(--text-secondary)] uppercase">Test</p>
+                            </div>
+                            <div class="w-px h-8 bg-[var(--border)]"></div>
+                            <div class="text-center">
+                                <p id="statPlans" class="text-lg font-bold text-[var(--success)]">0</p>
+                                <p class="text-[10px] text-[var(--text-secondary)] uppercase">Piani</p>
+                            </div>
+                            <div class="w-px h-8 bg-[var(--border)]"></div>
+                            <div class="text-center">
+                                <p id="statDone" class="text-lg font-bold text-[var(--warning)]">0</p>
+                                <p class="text-[10px] text-[var(--text-secondary)] uppercase">Completati</p>
+                            </div>
+                        </div>
+                        <button class="btn-ghost" onclick="openImportModal()">
+                            <i data-lucide="clipboard-paste" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Importa JSON</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content area -->
+            <div id="mainContent" class="p-6 max-w-5xl mx-auto"></div>
+        </main>
+    </div>
+
+    <!-- Add Test Modal -->
+    <div id="addTestModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'addTestModal')">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-[var(--accent)]"></i>
+                    Aggiungi Nuovo Test
+                </h3>
+                <button class="btn-ghost p-2" onclick="closeModal('addTestModal')">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Materia</label>
+                    <input id="testSubject" type="text" class="input-field" placeholder="es. Matematica, Fisica, Storia..." autocomplete="off">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Data del Test</label>
+                    <input id="testDate" type="date" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Note (opzionale)</label>
+                    <input id="testNotes" type="text" class="input-field" placeholder="Argomenti, capitoli, dettagli...">
+                </div>
+                <button class="btn-primary w-full justify-center mt-4" onclick="addTest()">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    Aggiungi Test
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import JSON Modal -->
+    <div id="importModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'importModal')">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i data-lucide="clipboard-paste" class="w-5 h-5 text-[var(--accent)]"></i>
+                    Importa Piano di Studio
+                </h3>
+                <button class="btn-ghost p-2" onclick="closeModal('importModal')">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Seleziona Test</label>
+                    <select id="importTestSelect" class="input-field">
+                        <option value="">— Scegli un test —</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Incolla la risposta JSON di Gemini</label>
+                    <textarea id="jsonInput" class="input-field" placeholder='Incolla qui il JSON restituito da Gemini...'></textarea>
+                </div>
+                <button class="btn-primary w-full justify-center mt-4" onclick="importJSON()">
+                    <i data-lucide="upload" class="w-4 h-4"></i>
+                    Importa Piano
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== DATA LAYER =====
+        const STORAGE_KEY = 'studyflow_data';
+
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : { tests: [] };
+            } catch {
+                return { tests: [] };
+            }
+        }
+
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // ===== TOAST =====
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.className = `toast toast-${type} show`;
+            const icons = { success: '✓', error: '✕', info: 'ℹ' };
+            toast.innerHTML = `<span>${icons[type] || ''}</span> ${message}`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // ===== MODALS =====
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        function closeModalOnOverlay(e, id) {
+            if (e.target === e.currentTarget) closeModal(id);
+        }
+        function openAddTestModal() {
+            document.getElementById('testSubject').value = '';
+            document.getElementById('testDate').value = '';
+            document.getElementById('testNotes').value = '';
+            openModal('addTestModal');
+            setTimeout(() => document.getElementById('testSubject').focus(), 100);
+        }
+        function openImportModal() {
+            populateImportSelect();
+            document.getElementById('jsonInput').value = '';
+            openModal('importModal');
+        }
+
+        function populateImportSelect() {
+            const data = loadData();
+            const select = document.getElementById('importTestSelect');
+            select.innerHTML = '<option value="">— Scegli un test —</option>';
+            data.tests.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = `${t.subject} — ${formatDate(t.date)}`;
+                select.appendChild(opt);
+            });
+        }
+
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            const ov = document.getElementById('mobileOverlay');
+            sb.classList.toggle('open');
+            ov.classList.toggle('show');
+        }
+
+        // ===== UTILITIES =====
+        function generateId() {
+            return 'test_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function formatDateShort(dateStr) {
+            const d = new Date(dateStr + 'T00:00:00');
+            return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+        }
+
+        function daysUntil(dateStr) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const target = new Date(dateStr + 'T00:00:00');
+            return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+        }
+
+        function getTodayStr() {
+            const d = new Date();
+            return d.toISOString().split('T')[0];
+        }
+
+        function getDaysLabel(days) {
+            if (days < 0) return 'Passato';
+            if (days === 0) return 'Oggi!';
+            if (days === 1) return 'Domani';
+            return `${days} giorni`;
+        }
+
+        function getUrgencyClass(days) {
+            if (days < 0) return 'badge-success';
+            if (days <= 1) return 'badge-danger';
+            if (days <= 3) return 'badge-warning';
+            return 'badge-purple';
+        }
+
+        // ===== CORE ACTIONS =====
+        function addTest() {
+            const subject = document.getElementById('testSubject').value.trim();
+            const date = document.getElementById('testDate').value;
+            const notes = document.getElementById('testNotes').value.trim();
+
+            if (!subject || !date) {
+                showToast('Compila materia e data!', 'error');
+                return;
+            }
+
+            const data = loadData();
+            data.tests.push({
+                id: generateId(),
+                subject,
+                date,
+                notes,
+                plan: null,
+                completedTasks: {},
+                createdAt: new Date().toISOString()
+            });
+            saveData(data);
+            closeModal('addTestModal');
+            showToast(`Test di ${subject} aggiunto!`);
+            render();
+        }
+
+        function deleteTest(id) {
+            if (!confirm('Sei sicuro di voler eliminare questo test e il suo piano?')) return;
+            const data = loadData();
+            data.tests = data.tests.filter(t => t.id !== id);
+            saveData(data);
+            showToast('Test eliminato', 'info');
+            if (state.activeTestId === id) state.activeTestId = null;
+            render();
+        }
+
+        function copyPrompt(testId) {
+            const data = loadData();
+            const test = data.tests.find(t => t.id === testId);
+            if (!test) return;
+
+            const today = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+            const testDate = formatDate(test.date);
+
+            const prompt = `Sono uno studente. Ho un test di ${test.subject} il giorno ${testDate}. Oggi è il ${today}.${test.notes ? ' Argomenti: ' + test.notes + '.' : ''} Crea un piano di studio dettagliato suddiviso per giorni. Rispondi ESCLUSIVAMENTE con un codice JSON strutturato così: {"materia": "...", "piani": [{"data": "YYYY-MM-DD", "task": "..."}]}`;
+
+            navigator.clipboard.writeText(prompt).then(() => {
+                showToast('Prompt copiato negli appunti! Incollalo in Gemini', 'success');
+            }).catch(() => {
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = prompt;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                showToast('Prompt copiato!', 'success');
+            });
+        }
+
+        function importJSON() {
+            const testId = document.getElementById('importTestSelect').value;
+            const raw = document.getElementById('jsonInput').value.trim();
+
+            if (!testId) {
+                showToast('Seleziona un test!', 'error');
+                return;
+            }
+            if (!raw) {
+                showToast('Incolla il JSON!', 'error');
+                return;
+            }
+
+            let parsed;
+            try {
+                // Try to extract JSON from markdown code blocks
+                let jsonStr = raw;
+                const codeBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+                if (codeBlockMatch) {
+                    jsonStr = codeBlockMatch[1].trim();
+                }
+                parsed = JSON.parse(jsonStr);
+            } catch {
+                showToast('JSON non valido. Controlla il formato!', 'error');
+                return;
+            }
+
+            if (!parsed.piani || !Array.isArray(parsed.piani)) {
+                showToast('Il JSON deve contenere un array "piani"!', 'error');
+                return;
+            }
+
+            const data = loadData();
+            const test = data.tests.find(t => t.id === testId);
+            if (!test) return;
+
+            test.plan = {
+                materia: parsed.materia || test.subject,
+                piani: parsed.piani.map((p, i) => ({
+                    id: `task_${Date.now()}_${i}`,
+                    data: p.data || '',
+                    task: p.task || ''
+                }))
+            };
+            test.completedTasks = {};
+            saveData(data);
+            closeModal('importModal');
+            state.activeTestId = testId;
+            showToast(`Piano importato! ${parsed.piani.length} task caricati`, 'success');
+            render();
+        }
+
+        function toggleTask(testId, taskId) {
+            const data = loadData();
+            const test = data.tests.find(t => t.id === testId);
+            if (!test) return;
+            if (!test.completedTasks) test.completedTasks = {};
+            test.completedTasks[taskId] = !test.completedTasks[taskId];
+            saveData(data);
+            render();
+        }
+
+        function exportData() {
+            const data = loadData();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `studyflow-backup-${getTodayStr()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Dati esportati!', 'success');
+        }
+
+        // ===== STATE =====
+        const state = { activeTestId: null };
+
+        // ===== RENDERING =====
+        function render() {
+            renderSidebar();
+            renderMainContent();
+            renderStats();
+            lucide.createIcons();
+        }
+
+        function renderStats() {
+            const data = loadData();
+            const total = data.tests.length;
+            const withPlans = data.tests.filter(t => t.plan).length;
+            const completed = data.tests.filter(t => {
+                if (!t.plan) return false;
+                const tasks = t.plan.piani;
+                return tasks.every(p => t.completedTasks[p.id]);
+            }).length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statPlans').textContent = withPlans;
+            document.getElementById('statDone').textContent = completed;
+        }
+
+        function renderSidebar() {
+            const data = loadData();
+            const container = document.getElementById('sidebarTests');
+
+            if (data.tests.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 px-4">
+                        <div class="w-12 h-12 rounded-full bg-[var(--accent-glow)] flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="book-open" class="w-5 h-5 text-[var(--accent)]"></i>
+                        </div>
+                        <p class="text-sm text-[var(--text-secondary)]">Nessun test aggiunto</p>
+                        <p class="text-xs text-[var(--text-secondary)] mt-1">Clicca "Nuovo Test" per iniziare</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort by date
+            const sorted = [...data.tests].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            container.innerHTML = sorted.map(test => {
+                const days = daysUntil(test.date);
+                const isActive = state.activeTestId === test.id;
+                const hasPlan = !!test.plan;
+                const isDanger = days <= 1 && days >= 0 && !hasPlan;
+
+                let progressPct = 0;
+                if (hasPlan) {
+                    const total = test.plan.piani.length;
+                    const done = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
+                    progressPct = total > 0 ? Math.round((done / total) * 100) : 0;
+                }
+
+                return `
+                    <div class="sidebar-item rounded-lg px-3 py-3 mb-1 cursor-pointer ${isActive ? 'active' : ''} ${isDanger ? 'pulse-danger' : ''}"
+                         onclick="setActiveTest('${test.id}')">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-medium text-sm truncate flex-1">${test.subject}</span>
+                            ${isDanger ? '<span class="badge badge-danger text-[9px] py-0.5 px-1.5">PERICOLO</span>' : ''}
+                        </div>
+                        <div class="flex items-center gap-2 mb-1.5">
+                            <span class="text-xs text-[var(--text-secondary)]">${formatDateShort(test.date)}</span>
+                            <span class="badge ${getUrgencyClass(days)} text-[9px] py-0.5">${getDaysLabel(days)}</span>
+                            ${hasPlan ? '<span class="badge badge-success text-[9px] py-0.5">Piano ✓</span>' : ''}
+                        </div>
+                        ${hasPlan ? `
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPct}%"></div>
+                            </div>
+                            <p class="text-[10px] text-[var(--text-secondary)] mt-1">${progressPct}% completato</p>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setActiveTest(id) {
+            state.activeTestId = state.activeTestId === id ? null : id;
+            render();
+        }
+
+        function renderMainContent() {
+            const data = loadData();
+            const container = document.getElementById('mainContent');
+
+            if (state.activeTestId) {
+                const test = data.tests.find(t => t.id === state.activeTestId);
+                if (test) {
+                    renderTestDetail(test, container);
+                    return;
+                }
+            }
+
+            renderDashboard(data, container);
+        }
+
+        function renderDashboard(data, container) {
+            const title = document.getElementById('mainTitle');
+            const subtitle = document.getElementById('mainSubtitle');
+            title.textContent = 'Dashboard';
+            subtitle.textContent = 'Panoramica dei tuoi test e piani di studio';
+
+            if (data.tests.length === 0) {
+                container.innerHTML = `
+                    <div class="animate-in flex flex-col items-center justify-center py-20">
+                        <div class="empty-state-icon">
+                            <i data-lucide="rocket" class="w-10 h-10 text-[var(--accent)]"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Inizia il tuo viaggio! 🚀</h3>
+                        <p class="text-[var(--text-secondary)] text-center max-w-md mb-6">
+                            Ogni grande risultato inizia con un piano. Aggiungi il tuo primo test e lascia che l'AI ti aiuti a prepararti al meglio.
+                        </p>
+                        <button class="btn-primary" onclick="openAddTestModal()">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Aggiungi il primo test
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            // Upcoming tests sorted by date
+            const sorted = [...data.tests].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const upcoming = sorted.filter(t => daysUntil(t.date) >= 0);
+            const past = sorted.filter(t => daysUntil(t.date) < 0);
+
+            let html = '';
+
+            // Urgent tests alert
+            const urgentTests = upcoming.filter(t => daysUntil(t.date) <= 1 && !t.plan);
+            if (urgentTests.length > 0) {
+                html += `
+                    <div class="card p-4 mb-6 glow-danger border-red-500/30 animate-in">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-[var(--danger-glow)] flex items-center justify-center">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-[var(--danger)]"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-[var(--danger)]">⚠️ PERICOLO</h3>
+                                <p class="text-sm text-[var(--text-secondary)]">Test imminenti senza piano di studio!</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            ${urgentTests.map(t => `
+                                <div class="flex items-center justify-between bg-[var(--danger-glow)] rounded-lg px-4 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <span class="font-medium">${t.subject}</span>
+                                        <span class="badge badge-danger">${getDaysLabel(daysUntil(t.date))}</span>
+                                    </div>
+                                    <button class="btn-ghost text-xs" onclick="copyPrompt('${t.id}')">
+                                        <i data-lucide="copy" class="w-3 h-3"></i>
+                                        Prepara Piano
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Today's tasks across all plans
+            const today = getTodayStr();
+            const todayTasks = [];
+            data.tests.forEach(test => {
+                if (test.plan) {
+                    test.plan.piani.forEach(p => {
+                        if (p.data === today) {
+                            todayTasks.push({ test, task: p });
+                        }
+                    });
+                }
+            });
+
+            if (todayTasks.length > 0) {
+                html += `
+                    <div class="card p-5 mb-6 animate-in glow-purple">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-xl bg-[var(--accent-glow)] flex items-center justify-center">
+                                <i data-lucide="calendar-check" class="w-5 h-5 text-[var(--accent)]"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold">Programma di Oggi</h3>
+                                <p class="text-sm text-[var(--text-secondary)]">${todayTasks.length} task da completare</p>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            ${todayTasks.map(({test, task}) => {
+                                const done = test.completedTasks[task.id];
+                                return `
+                                    <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-primary)] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
+                                         onclick="toggleTask('${test.id}', '${task.id}')">
+                                        <input type="checkbox" class="task-check" ${done ? 'checked' : ''} onclick="event.stopPropagation(); toggleTask('${test.id}', '${task.id}')">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm ${done ? 'task-done' : ''}">${task.task}</p>
+                                            <p class="text-xs text-[var(--text-secondary)]">${test.subject}</p>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Test cards
+            html += `
+                <div class="mb-4 flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                        Test in Arrivo
+                    </h3>
+                </div>
+            `;
+
+            if (upcoming.length === 0) {
+                html += `
+                    <div class="card p-8 text-center animate-in">
+                        <p class="text-[var(--text-secondary)]">Nessun test in programma. Aggiungine uno!</p>
+                    </div>
+                `;
+            } else {
+                html += `<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">`;
+                upcoming.forEach((test, i) => {
+                    const days = daysUntil(test.date);
+                    const hasPlan = !!test.plan;
+                    let progressPct = 0;
+                    if (hasPlan) {
+                        const total = test.plan.piani.length;
+                        const done = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
+                        progressPct = total > 0 ? Math.round((done / total) * 100) : 0;
+                    }
+
+                    html += `
+                        <div class="card p-4 cursor-pointer animate-in ${days <= 1 && !hasPlan ? 'border-red-500/30' : ''}"
+                             style="animation-delay: ${i * 0.05}s"
+                             onclick="setActiveTest('${test.id}')">
+                            <div class="flex items-start justify-between mb-3">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold truncate">${test.subject}</h4>
+                                    <p class="text-xs text-[var(--text-secondary)] mt-0.5">${formatDate(test.date)}</p>
+                                </div>
+                                <span class="badge ${getUrgencyClass(days)} text-[9px]">${getDaysLabel(days)}</span>
+                            </div>
+                            ${test.notes ? `<p class="text-xs text-[var(--text-secondary)] mb-3 line-clamp-2">${test.notes}</p>` : ''}
+                            ${hasPlan ? `
+                                <div class="progress-bar mb-1.5">
+                                    <div class="progress-fill" style="width: ${progressPct}%"></div>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[10px] text-[var(--text-secondary)]">${progressPct}% completato</span>
+                                    <span class="badge badge-success text-[9px] py-0.5">Piano ✓</span>
+                                </div>
+                            ` : `
+                                <div class="flex items-center gap-2 mt-2">
+                                    <button class="btn-ghost text-[11px] flex-1 justify-center" onclick="event.stopPropagation(); copyPrompt('${test.id}')">
+                                        <i data-lucide="copy" class="w-3 h-3"></i>
+                                        Prepara Piano
+                                    </button>
+                                </div>
+                            `}
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Past tests
+            if (past.length > 0) {
+                html += `
+                    <div class="mt-8 mb-4">
+                        <h3 class="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="history" class="w-4 h-4"></i>
+                            Test Passati
+                        </h3>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                `;
+                past.forEach((test, i) => {
+                    const hasPlan = !!test.plan;
+                    let progressPct = 0;
+                    if (hasPlan) {
+                        const total = test.plan.piani.length;
+                        const done = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
+                        progressPct = total > 0 ? Math.round((done / total) * 100) : 0;
+                    }
+                    html += `
+                        <div class="card p-4 cursor-pointer opacity-60 hover:opacity-80 transition-opacity animate-in"
+                             style="animation-delay: ${i * 0.05}s"
+                             onclick="setActiveTest('${test.id}')">
+                            <div class="flex items-start justify-between mb-2">
+                                <h4 class="font-semibold truncate">${test.subject}</h4>
+                                <span class="badge badge-success text-[9px]">Passato</span>
+                            </div>
+                            <p class="text-xs text-[var(--text-secondary)]">${formatDate(test.date)}</p>
+                            ${hasPlan ? `
+                                <div class="progress-bar mt-2">
+                                    <div class="progress-fill" style="width: ${progressPct}%"></div>
+                                </div>
+                                <span class="text-[10px] text-[var(--text-secondary)]">${progressPct}% completato</span>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+
+            // Motivational quote
+            const quotes = [
+                "Il successo è la somma di piccoli sforzi ripetuti giorno dopo giorno. — Robert Collier",
+                "La disciplina è il ponte tra gli obiettivi e i risultati. — Jim Rohn",
+                "Non contare i giorni, fai che i giorni contino. — Muhammad Ali",
+                "Lo studio è come remare controcorrente: se smetti, ti trascina indietro. — Proverbio cinese",
+                "Il momento migliore per iniziare a studiare era ieri. Il secondo momento migliore è adesso.",
+                "La preparazione è la chiave del successo. — Alexander Graham Bell",
+            ];
+            const quote = quotes[Math.floor(Math.random() * quotes.length)];
+
+            html += `
+                <div class="mt-8 gradient-line"></div>
+                <div class="mt-6 mb-4 text-center animate-in">
+                    <p class="text-sm text-[var(--text-secondary)] italic">"${quote}"</p>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderTestDetail(test, container) {
+            const title = document.getElementById('mainTitle');
+            const subtitle = document.getElementById('mainSubtitle');
+            const days = daysUntil(test.date);
+            const hasPlan = !!test.plan;
+
+            title.textContent = test.subject;
+            subtitle.textContent = `Test del ${formatDate(test.date)} — ${getDaysLabel(days)}`;
+
+            let progressPct = 0;
+            let completedCount = 0;
+            let totalCount = 0;
+            if (hasPlan) {
+                totalCount = test.plan.piani.length;
+                completedCount = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
+                progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+            }
+
+            let html = `
+                <div class="animate-in">
+                    <!-- Header card -->
+                    <div class="card p-5 mb-6 ${days <= 1 && !hasPlan ? 'glow-danger border-red-500/30' : 'glow-purple'}">
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-14 h-14 rounded-2xl ${days <= 1 && !hasPlan ? 'bg-[var(--danger-glow)]' : 'bg-[var(--accent-glow)]'} flex items-center justify-center">
+                                    <i data-lucide="${days <= 1 && !hasPlan ? 'alert-triangle' : 'book-open'}" class="w-7 h-7 ${days <= 1 && !hasPlan ? 'text-[var(--danger)]' : 'text-[var(--accent)]'}"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold">${test.subject}</h3>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-sm text-[var(--text-secondary)]">${formatDate(test.date)}</span>
+                                        <span class="badge ${getUrgencyClass(days)}">${getDaysLabel(days)}</span>
+                                        ${days <= 1 && !hasPlan ? '<span class="badge badge-danger">⚠️ PERICOLO</span>' : ''}
+                                    </div>
+                                    ${test.notes ? `<p class="text-sm text-[var(--text-secondary)] mt-1">${test.notes}</p>` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                ${!hasPlan ? `
+                                    <button class="btn-primary" onclick="copyPrompt('${test.id}')">
+                                        <i data-lucide="copy" class="w-4 h-4"></i>
+                                        Prepara Piano AI
+                                    </button>
+                                ` : ''}
+                                <button class="btn-ghost" onclick="openImportModal(); setTimeout(() => document.getElementById('importTestSelect').value='${test.id}', 50);">
+                                    <i data-lucide="clipboard-paste" class="w-4 h-4"></i>
+                                    Importa JSON
+                                </button>
+                                <button class="btn-danger" onclick="deleteTest('${test.id}')">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        ${hasPlan ? `
+                            <div class="mt-4 pt-4 border-t border-[var(--border)]">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm text-[var(--text-secondary)]">Progresso piano di studio</span>
+                                    <span class="text-sm font-bold text-[var(--accent)]">${progressPct}%</span>
+                                </div>
+                                <div class="progress-bar h-2">
+                                    <div class="progress-fill" style="width: ${progressPct}%"></div>
+                                </div>
+                                <p class="text-xs text-[var(--text-secondary)] mt-1">${completedCount}/${totalCount} task completati</p>
+                            </div>
+                        ` : ''}
+                    </div>
+            `;
+
+            if (hasPlan) {
+                // Schedule view
+                const today = getTodayStr();
+                const piani = [...test.plan.piani].sort((a, b) => a.data.localeCompare(b.data));
+
+                // Group by date
+                const grouped = {};
+                piani.forEach(p => {
+                    if (!grouped[p.data]) grouped[p.data] = [];
+                    grouped[p.data].push(p);
+                });
+
+                html += `
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-2">
+                            <i data-lucide="calendar-days" class="w-4 h-4"></i>
+                            Piano di Studio — ${test.plan.materia}
+                        </h3>
+                        <button class="btn-danger text-xs" onclick="removePlan('${test.id}')">
+                            <i data-lucide="x" class="w-3 h-3"></i>
+                            Rimuovi Piano
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                `;
+
+                Object.entries(grouped).forEach(([date, tasks]) => {
+                    const isToday = date === today;
+                    const isPast = daysUntil(date) < 0;
+                    const dayName = new Date(date + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+                    const dayTasksDone = tasks.filter(t => test.completedTasks[t.id]).length;
+                    const allDone = dayTasksDone === tasks.length;
+
+                    html += `
+                        <div class="day-card card p-4 ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl ${isToday ? 'bg-green-500/15' : allDone ? 'bg-purple-500/15' : 'bg-[var(--bg-primary)]'} flex items-center justify-center">
+                                        <i data-lucide="${isToday ? 'star' : allDone ? 'check-circle' : 'calendar'}" class="w-5 h-5 ${isToday ? 'text-green-400' : allDone ? 'text-purple-400' : 'text-[var(--text-secondary)]'}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold capitalize">${dayName}</h4>
+                                        <p class="text-xs text-[var(--text-secondary)]">${dayTasksDone}/${tasks.length} completati</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    ${isToday ? '<span class="badge badge-success">Oggi</span>' : ''}
+                                    ${allDone ? '<span class="badge badge-purple">Completato ✓</span>' : ''}
+                                </div>
+                            </div>
+                            <div class="space-y-2 ml-1">
+                                ${tasks.map(task => {
+                                    const done = test.completedTasks[task.id];
+                                    return `
+                                        <div class="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[var(--bg-primary)] transition-colors cursor-pointer"
+                                             onclick="toggleTask('${test.id}', '${task.id}')">
+                                            <input type="checkbox" class="task-check mt-0.5" ${done ? 'checked' : ''} onclick="event.stopPropagation(); toggleTask('${test.id}', '${task.id}')">
+                                            <p class="text-sm leading-relaxed ${done ? 'task-done' : ''}">${task.task}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+            } else {
+                // No plan - show instructions
+                html += `
+                    <div class="card p-8 text-center">
+                        <div class="empty-state-icon">
+                            <i data-lucide="sparkles" class="w-10 h-10 text-[var(--accent)]"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-2">Nessun piano ancora</h3>
+                        <p class="text-[var(--text-secondary)] max-w-lg mx-auto mb-6">
+                            Genera un piano di studio con l'AI! Clicca "Prepara Piano AI" per copiare un prompt ottimizzato per Gemini, 
+                            poi incolla la risposta JSON cliccando "Importa JSON".
+                        </p>
+                        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                            <button class="btn-primary" onclick="copyPrompt('${test.id}')">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                Copia Prompt per Gemini
+                            </button>
+                            <button class="btn-ghost" onclick="openImportModal(); setTimeout(() => document.getElementById('importTestSelect').value='${test.id}', 50);">
+                                <i data-lucide="clipboard-paste" class="w-4 h-4"></i>
+                                Ho già un JSON
+                            </button>
+                        </div>
+                        <div class="mt-8 text-left max-w-md mx-auto">
+                            <p class="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Come funziona:</p>
+                            <div class="space-y-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 rounded-full bg-[var(--accent-glow)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span class="text-xs font-bold text-[var(--accent)]">1</span>
+                                    </div>
+                                    <p class="text-sm text-[var(--text-secondary)]">Clicca "Copia Prompt" per copiare il prompt ottimizzato</p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 rounded-full bg-[var(--accent-glow)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span class="text-xs font-bold text-[var(--accent)]">2</span>
+                                    </div>
+                                    <p class="text-sm text-[var(--text-secondary)]">Incolla il prompt in Gemini e attendi la risposta JSON</p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <div class="w-6 h-6 rounded-full bg-[var(--accent-glow)] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <span class="text-xs font-bold text-[var(--accent)]">3</span>
+                                    </div>
+                                    <p class="text-sm text-[var(--text-secondary)]">Copia il JSON e incollalo qui con "Importa JSON"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function removePlan(testId) {
+            if (!confirm('Vuoi rimuovere il piano di studio? I progressi saranno persi.')) return;
+            const data = loadData();
+            const test = data.tests.find(t => t.id === testId);
+            if (test) {
+                test.plan = null;
+                test.completedTasks = {};
+                saveData(data);
+                showToast('Piano rimosso', 'info');
+                render();
+            }
+        }
+
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+            }
+            if (e.key === 'n' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                openAddTestModal();
+            }
+        });
+
+        // ===== INIT =====
+        document.addEventListener('DOMContentLoaded', () => {
+            render();
+        });
+
+        // Init Lucide
+        lucide.createIcons();
+    </script>
+</body>
+</html>
