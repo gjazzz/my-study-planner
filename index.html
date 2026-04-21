@@ -1,1318 +1,2032 @@
 <!DOCTYPE html>
-<html lang="it" class="dark">
+<html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StudyFlow — Gestione Scolastica</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>StudyOS</title>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-        * { font-family: 'Inter', sans-serif; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-card: #16161f;
-            --bg-hover: #1c1c28;
-            --border: #2a2a3a;
-            --text-primary: #e4e4ef;
-            --text-secondary: #8888a0;
-            --accent: #8b5cf6;
-            --accent-light: #a78bfa;
-            --accent-glow: rgba(139, 92, 246, 0.15);
-            --danger: #ef4444;
-            --danger-glow: rgba(239, 68, 68, 0.15);
-            --success: #22c55e;
-            --warning: #f59e0b;
-        }
+  :root {
+    --bg: #080810;
+    --surface: #0e0e1a;
+    --card: #13131f;
+    --card2: #171726;
+    --border: #1f1f35;
+    --border2: #2a2a45;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --accent: #7c3aed;
+    --accent-light: #8b5cf6;
+    --accent-glow: rgba(124,58,237,0.25);
+    --neon: #a78bfa;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --orange: #f97316;
+  }
 
-        body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-        }
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+  }
 
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
 
-        /* Glow effects */
-        .glow-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.2), 0 0 60px rgba(139, 92, 246, 0.05); }
-        .glow-danger { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3), 0 0 60px rgba(239, 68, 68, 0.08); }
-        .glow-success { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
+  /* Layout */
+  .app { display: flex; height: 100vh; }
 
-        /* Sidebar */
-        .sidebar {
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border);
-            width: 300px;
-            min-width: 300px;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px;
+    min-width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-        .sidebar-item {
-            transition: all 0.15s ease;
-            border-left: 3px solid transparent;
-        }
-        .sidebar-item:hover { background: var(--bg-hover); }
-        .sidebar-item.active {
-            background: var(--accent-glow);
-            border-left-color: var(--accent);
-        }
+  .sidebar-logo {
+    padding: 20px 18px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-logo h1 {
+    font-size: 17px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.3px;
+  }
+  .sidebar-logo p { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
-        /* Cards */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            transition: all 0.2s ease;
-        }
-        .card:hover { border-color: rgba(139, 92, 246, 0.3); }
+  .sidebar-section { padding: 14px 12px 10px; }
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 6px;
+    margin-bottom: 6px;
+  }
 
-        /* Buttons */
-        .btn-primary {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-primary:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
-        }
-        .btn-primary:active { transform: translateY(0); }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .nav-item.active { background: rgba(124,58,237,0.18); color: var(--neon); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-        .btn-ghost {
-            background: transparent;
-            color: var(--text-secondary);
-            border: 1px solid var(--border);
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-        }
-        .btn-ghost:hover {
-            color: var(--text-primary);
-            border-color: var(--accent);
-            background: var(--accent-glow);
-        }
+  .sidebar-streak {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .streak-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .streak-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 700; color: #fb923c;
+  }
+  .flame { animation: flicker 2s ease-in-out infinite; }
+  @keyframes flicker {
+    0%,100% { filter: drop-shadow(0 0 4px #f97316); }
+    50% { filter: drop-shadow(0 0 10px #fb923c); }
+  }
+  .progress-mini { height: 4px; background: var(--border2); border-radius: 99px; overflow: hidden; }
+  .progress-mini-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--neon)); border-radius: 99px; transition: width 0.5s ease; }
 
-        .btn-danger {
-            background: transparent;
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            padding: 6px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-        }
-        .btn-danger:hover {
-            background: var(--danger-glow);
-            border-color: var(--danger);
-        }
+  .sidebar-subjects { flex: 1; overflow-y: auto; padding: 10px 12px; }
+  .subject-pill {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 7px; margin-bottom: 3px;
+    font-size: 12px; font-weight: 500; color: var(--muted);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .subject-pill:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .subject-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 
-        /* Input */
-        .input-field {
-            background: var(--bg-primary);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 10px 14px;
-            color: var(--text-primary);
-            font-size: 14px;
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
-            width: 100%;
-            outline: none;
-        }
-        .input-field:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-        .input-field::placeholder { color: var(--text-secondary); }
+  .sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); }
+  .kbd-hint { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-size: 11px; color: var(--muted); }
+  .kbd { background: var(--border2); border-radius: 4px; padding: 1px 6px; font-size: 10px; font-weight: 700; color: var(--text); }
 
-        /* Textarea */
-        textarea.input-field {
-            resize: vertical;
-            min-height: 120px;
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 12px;
-            line-height: 1.6;
-        }
+  /* ── MAIN ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Badge */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .badge-danger { background: var(--danger-glow); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
-        .badge-warning { background: rgba(245, 158, 11, 0.12); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
-        .badge-success { background: rgba(34, 197, 94, 0.12); color: var(--success); border: 1px solid rgba(34, 197, 94, 0.3); }
-        .badge-purple { background: var(--accent-glow); color: var(--accent-light); border: 1px solid rgba(139, 92, 246, 0.3); }
+  .topbar {
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    height: 56px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    padding: 6px 14px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border: none;
+    background: none;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .tab-btn.active { color: var(--neon); background: rgba(124,58,237,0.15); }
 
-        /* Checkbox custom */
-        .task-check {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .task-check:checked {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-        .task-check:checked::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .task-check:hover { border-color: var(--accent); }
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
-        .task-done { text-decoration: line-through; color: var(--text-secondary); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; white-space: nowrap;
+  }
+  .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: white;
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+  .btn-primary:hover { box-shadow: 0 0 30px rgba(124,58,237,0.45); transform: translateY(-1px); }
+  .btn-ghost {
+    background: rgba(255,255,255,0.05);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+  .btn-danger { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+  .btn-danger:hover { background: rgba(239,68,68,0.25); }
+  .btn-success { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .btn-success:hover { background: rgba(16,185,129,0.25); }
+  .btn-yellow { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .btn-yellow:hover { background: rgba(245,158,11,0.25); }
 
-        /* Progress bar */
-        .progress-bar {
-            height: 4px;
-            background: var(--bg-primary);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
-            border-radius: 2px;
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+  .content { flex: 1; overflow-y: auto; padding: 28px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
-        /* Toast notification */
-        .toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            padding: 14px 22px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            z-index: 9999;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .toast-success { background: #16a34a; color: white; }
-        .toast-error { background: #dc2626; color: white; }
-        .toast-info { background: #7c3aed; color: white; }
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .card-p { padding: 20px; }
+  .card:hover { border-color: var(--border2); }
 
-        /* Modal overlay */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-        }
-        .modal-overlay.show { opacity: 1; pointer-events: all; }
-        .modal-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 28px;
-            max-width: 560px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            transform: scale(0.95);
-            transition: transform 0.2s ease;
-        }
-        .modal-overlay.show .modal-content { transform: scale(1); }
+  /* ── DASHBOARD ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .stat-value { font-size: 30px; font-weight: 800; line-height: 1; }
+  .stat-value.purple { background: linear-gradient(135deg, var(--neon), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.red { color: var(--red); }
+  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-in { animation: fadeInUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .dash-grid { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
 
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.15); }
-            50% { box-shadow: 0 0 30px rgba(139, 92, 246, 0.3); }
-        }
+  /* Tests list */
+  .test-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .test-item:last-child { border-bottom: none; }
+  .test-item:hover { background: rgba(255,255,255,0.02); }
+  .test-color-bar { width: 3px; height: 36px; border-radius: 99px; flex-shrink: 0; }
+  .test-info { flex: 1; min-width: 0; }
+  .test-subject { font-size: 14px; font-weight: 600; color: var(--text); }
+  .test-date { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .test-countdown {
+    font-size: 11px; font-weight: 700; padding: 3px 8px;
+    border-radius: 6px; white-space: nowrap; flex-shrink: 0;
+  }
+  .countdown-ok { background: rgba(16,185,129,0.12); color: #6ee7b7; }
+  .countdown-warn { background: rgba(245,158,11,0.12); color: #fcd34d; }
+  .countdown-danger { background: rgba(239,68,68,0.15); color: #fca5a5; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+  .test-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 
-        /* Danger pulse for urgent tests */
-        @keyframes pulse-danger {
-            0%, 100% { box-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
-            50% { box-shadow: 0 0 25px rgba(239, 68, 68, 0.4); }
-        }
-        .pulse-danger { animation: pulse-danger 2s infinite; }
+  .danger-banner {
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #fca5a5;
+  }
 
-        /* Day card in schedule */
-        .day-card {
-            border-left: 3px solid var(--accent);
-            transition: all 0.2s ease;
-        }
-        .day-card:hover {
-            background: var(--bg-hover);
-        }
-        .day-card.today {
-            border-left-color: var(--success);
-            background: rgba(34, 197, 94, 0.04);
-        }
-        .day-card.past {
-            opacity: 0.6;
-            border-left-color: var(--text-secondary);
-        }
+  /* Energy bar */
+  .energy-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+  .energy-chip {
+    padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); color: var(--muted);
+    background: var(--card); transition: all 0.15s;
+  }
+  .energy-chip.sel-low { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.12); color: #fca5a5; }
+  .energy-chip.sel-med { border-color: rgba(245,158,11,0.5); background: rgba(245,158,11,0.12); color: #fcd34d; }
+  .energy-chip.sel-high { border-color: rgba(16,185,129,0.5); background: rgba(16,185,129,0.12); color: #6ee7b7; }
 
-        /* Empty state */
-        .empty-state-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: var(--accent-glow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-        }
+  /* ── SCHEDULE ── */
+  .schedule-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .schedule-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+  .day-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .day-card.today { border-color: rgba(124,58,237,0.4); box-shadow: 0 0 20px rgba(124,58,237,0.08); }
+  .day-card-header {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .day-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .day-date { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .day-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+    background: rgba(124,58,237,0.2); color: var(--neon);
+  }
+  .day-badge.today-badge { background: rgba(124,58,237,0.35); }
+  .day-tasks { padding: 10px; min-height: 50px; }
+  .day-progress { height: 2px; background: var(--border); margin: 0 14px 10px; border-radius: 99px; overflow: hidden; }
+  .day-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--neon)); border-radius: 99px; transition: width 0.4s; }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                z-index: 50;
-                transform: translateX(-100%);
-            }
-            .sidebar.open { transform: translateX(0); }
-            .mobile-overlay {
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 49;
-                display: none;
-            }
-            .mobile-overlay.show { display: block; }
-        }
+  .task-item {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 10px; border-radius: 8px; margin-bottom: 4px;
+    background: var(--card2); border: 1px solid var(--border);
+    cursor: grab; transition: all 0.15s;
+  }
+  .task-item:hover { border-color: var(--border2); }
+  .task-item.done { opacity: 0.45; }
+  .task-item.done .task-text { text-decoration: line-through; color: var(--muted); }
+  .task-check {
+    width: 16px; height: 16px; border-radius: 4px;
+    border: 1.5px solid var(--border2); background: none;
+    cursor: pointer; flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .task-check.checked { background: var(--accent); border-color: var(--accent); }
+  .task-check.checked::after { content: '✓'; font-size: 10px; color: white; font-weight: 700; }
+  .task-text { font-size: 12px; color: var(--text); line-height: 1.4; flex: 1; }
+  .task-subject-badge { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+  .sortable-ghost { opacity: 0.25; border: 1px dashed var(--accent) !important; }
 
-        /* Notification dot */
-        .notif-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--danger);
-            border-radius: 50%;
-            position: absolute;
-            top: -2px;
-            right: -2px;
-        }
+  .empty-schedule {
+    text-align: center; padding: 60px 20px; color: var(--muted);
+  }
+  .empty-schedule .emoji { font-size: 48px; margin-bottom: 14px; }
+  .empty-schedule h3 { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .empty-schedule p { font-size: 13px; line-height: 1.6; }
 
-        /* Skeleton gradient line */
-        .gradient-line {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--border), transparent);
-        }
-    </style>
+  /* ── VOTI ── */
+  .voti-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+  .grade-row {
+    display: grid; grid-template-columns: 1fr auto auto auto;
+    align-items: center; gap: 12px;
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .grade-row:last-child { border-bottom: none; }
+  .grade-row:hover { background: rgba(255,255,255,0.02); }
+  .grade-subject { font-size: 13px; font-weight: 600; }
+  .grade-val { font-size: 15px; font-weight: 700; width: 36px; text-align: center; }
+  .grade-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+
+  /* ── POMODORO ── */
+  .pom-center { max-width: 380px; margin: 0 auto; text-align: center; }
+  .pom-ring-wrap { position: relative; width: 220px; height: 220px; margin: 0 auto 24px; }
+  .pom-ring-wrap svg { transform: rotate(-90deg); }
+  #pomRingBg { stroke: var(--border2); }
+  #pomRingFill { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 565; stroke-dashoffset: 0; transition: stroke-dashoffset 0.5s linear; }
+  .pom-time-display {
+    position: absolute; inset: 0; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .pom-time { font-size: 42px; font-weight: 800; letter-spacing: -2px; color: var(--text); }
+  .pom-phase { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+  .pom-controls { display: flex; align-items: center; gap: 12px; justify-content: center; margin-bottom: 20px; }
+  .pom-dots { display: flex; gap: 6px; justify-content: center; }
+  .pom-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); transition: background 0.3s; }
+  .pom-dot.done { background: var(--accent); }
+
+  /* ── TOOLS ── */
+  .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .tool-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .tool-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .tool-desc { font-size: 12px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+
+  /* ── INPUTS ── */
+  .input {
+    width: 100%;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .input:focus { border-color: var(--accent); }
+  .input::placeholder { color: var(--muted); }
+  textarea.input { resize: vertical; min-height: 100px; line-height: 1.5; }
+  select.input option { background: var(--card); }
+  .label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+  .field { margin-bottom: 16px; }
+  .field:last-child { margin-bottom: 0; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.75);
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+    padding: 20px;
+  }
+  .modal-box {
+    background: var(--card);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 28px;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+    animation: slideUp 0.2s ease;
+  }
+  .modal-box.wide { max-width: 640px; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+
+  /* ── FOCUS OVERLAY ── */
+  #focusOverlay {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(5,5,15,0.97);
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  #focusOverlay.on { display: flex; }
+
+  /* ── TOAST ── */
+  #toastContainer {
+    position: fixed; bottom: 24px; right: 24px; z-index: 3000;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  }
+  .toast {
+    background: var(--card2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    pointer-events: auto;
+    animation: toastIn 0.3s ease;
+    max-width: 320px;
+  }
+  @keyframes toastIn { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+  .toast-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* ── MISC ── */
+  .section-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .section-sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .badge-purple { background: rgba(124,58,237,0.2); color: var(--neon); }
+  .badge-green { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #fca5a5; }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .hidden { display: none !important; }
+  .fade { animation: fadeIn 0.25s ease; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  .progress-bar { height: 6px; background: var(--border2); border-radius: 99px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; background: linear-gradient(90deg, var(--accent), var(--neon)); }
+  .progress-fill.g { background: linear-gradient(90deg, #059669, #10b981); }
+  .progress-fill.y { background: linear-gradient(90deg, #d97706, #f59e0b); }
+  .progress-fill.r { background: linear-gradient(90deg, #dc2626, #ef4444); }
+
+  /* ── LOG PROMPTS ── */
+  .log-item {
+    padding: 10px 14px; background: var(--card2);
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s;
+  }
+  .log-item:hover { border-color: var(--accent-light); }
+  .log-item-title { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .log-item-preview { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  @media print {
+    .sidebar, .topbar, .no-print { display: none !important; }
+    body { background: white !important; color: black !important; }
+    .main { height: auto !important; overflow: visible !important; }
+    .content { padding: 0 !important; }
+    .day-card { break-inside: avoid; border: 1px solid #ccc !important; background: white !important; }
+  }
+</style>
 </head>
 <body>
-    <!-- Toast -->
-    <div id="toast" class="toast"></div>
+<div class="app">
 
-    <!-- Mobile overlay -->
-    <div id="mobileOverlay" class="mobile-overlay" onclick="toggleSidebar()"></div>
-
-    <!-- Main Layout -->
-    <div class="flex h-screen overflow-hidden">
-
-        <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar flex flex-col h-full">
-            <!-- Logo -->
-            <div class="p-5 flex items-center gap-3 border-b border-[var(--border)]">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
-                    <i data-lucide="brain" class="w-5 h-5 text-white"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight">StudyFlow</h1>
-                    <p class="text-[11px] text-[var(--text-secondary)] -mt-0.5">Gestione Scolastica</p>
-                </div>
-            </div>
-
-            <!-- Add test button -->
-            <div class="p-4">
-                <button class="btn-primary w-full justify-center" onclick="openAddTestModal()">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    Nuovo Test
-                </button>
-            </div>
-
-            <!-- Test list -->
-            <div class="flex-1 overflow-y-auto px-3 pb-4">
-                <p class="text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider px-3 mb-2">I Tuoi Test</p>
-                <div id="sidebarTests"></div>
-            </div>
-
-            <!-- Footer -->
-            <div class="p-4 border-t border-[var(--border)]">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white text-xs font-bold">S</div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium truncate">Studente</p>
-                        <p class="text-[11px] text-[var(--text-secondary)]">Locale — dati salvati</p>
-                    </div>
-                    <button class="btn-ghost p-2" onclick="exportData()" title="Esporta dati">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1 overflow-y-auto">
-            <!-- Top bar -->
-            <header class="sticky top-0 z-40 bg-[var(--bg-primary)]/80 backdrop-blur-xl border-b border-[var(--border)]">
-                <div class="flex items-center justify-between px-6 py-4">
-                    <div class="flex items-center gap-3">
-                        <button class="md:hidden btn-ghost p-2" onclick="toggleSidebar()">
-                            <i data-lucide="menu" class="w-5 h-5"></i>
-                        </button>
-                        <div>
-                            <h2 id="mainTitle" class="text-xl font-bold">Dashboard</h2>
-                            <p id="mainSubtitle" class="text-sm text-[var(--text-secondary)]">Panoramica dei tuoi test e piani di studio</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <div id="statsBar" class="hidden sm:flex items-center gap-4 mr-4">
-                            <div class="text-center">
-                                <p id="statTotal" class="text-lg font-bold text-[var(--accent)]">0</p>
-                                <p class="text-[10px] text-[var(--text-secondary)] uppercase">Test</p>
-                            </div>
-                            <div class="w-px h-8 bg-[var(--border)]"></div>
-                            <div class="text-center">
-                                <p id="statPlans" class="text-lg font-bold text-[var(--success)]">0</p>
-                                <p class="text-[10px] text-[var(--text-secondary)] uppercase">Piani</p>
-                            </div>
-                            <div class="w-px h-8 bg-[var(--border)]"></div>
-                            <div class="text-center">
-                                <p id="statDone" class="text-lg font-bold text-[var(--warning)]">0</p>
-                                <p class="text-[10px] text-[var(--text-secondary)] uppercase">Completati</p>
-                            </div>
-                        </div>
-                        <button class="btn-ghost" onclick="openImportModal()">
-                            <i data-lucide="clipboard-paste" class="w-4 h-4"></i>
-                            <span class="hidden sm:inline">Importa JSON</span>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Content area -->
-            <div id="mainContent" class="p-6 max-w-5xl mx-auto"></div>
-        </main>
+  <!-- ═══════════════════════════════ SIDEBAR ═══════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>StudyOS</h1>
+      <p>Il tuo spazio di studio</p>
     </div>
 
-    <!-- Add Test Modal -->
-    <div id="addTestModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'addTestModal')">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-5 h-5 text-[var(--accent)]"></i>
-                    Aggiungi Nuovo Test
-                </h3>
-                <button class="btn-ghost p-2" onclick="closeModal('addTestModal')">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Materia</label>
-                    <input id="testSubject" type="text" class="input-field" placeholder="es. Matematica, Fisica, Storia..." autocomplete="off">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Data del Test</label>
-                    <input id="testDate" type="date" class="input-field">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Note (opzionale)</label>
-                    <input id="testNotes" type="text" class="input-field" placeholder="Argomenti, capitoli, dettagli...">
-                </div>
-                <button class="btn-primary w-full justify-center mt-4" onclick="addTest()">
-                    <i data-lucide="check" class="w-4 h-4"></i>
-                    Aggiungi Test
-                </button>
-            </div>
+    <!-- Streak & Progress -->
+    <div class="sidebar-streak">
+      <div class="streak-row">
+        <div class="streak-badge">
+          <svg class="flame" width="18" height="18" viewBox="0 0 24 24" fill="#fb923c"><path d="M12 2C8.5 7 6 10.5 6 14a6 6 0 0012 0c0-3.5-2-7-6-12z"/></svg>
+          <span id="sStreak">0</span>
+          <span style="font-size:11px;color:#94a3b8;font-weight:400">giorni</span>
         </div>
+        <span style="font-size:11px;color:#6b6b8a" id="sProgress">0%</span>
+      </div>
+      <div class="progress-mini">
+        <div class="progress-mini-fill" id="sProgressBar" style="width:0%"></div>
+      </div>
     </div>
 
-    <!-- Import JSON Modal -->
-    <div id="importModal" class="modal-overlay" onclick="closeModalOnOverlay(event, 'importModal')">
-        <div class="modal-content">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold flex items-center gap-2">
-                    <i data-lucide="clipboard-paste" class="w-5 h-5 text-[var(--accent)]"></i>
-                    Importa Piano di Studio
-                </h3>
-                <button class="btn-ghost p-2" onclick="closeModal('importModal')">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Seleziona Test</label>
-                    <select id="importTestSelect" class="input-field">
-                        <option value="">— Scegli un test —</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-[var(--text-secondary)] mb-2">Incolla la risposta JSON di Gemini</label>
-                    <textarea id="jsonInput" class="input-field" placeholder='Incolla qui il JSON restituito da Gemini...'></textarea>
-                </div>
-                <button class="btn-primary w-full justify-center mt-4" onclick="importJSON()">
-                    <i data-lucide="upload" class="w-4 h-4"></i>
-                    Importa Piano
-                </button>
-            </div>
+    <!-- Navigation -->
+    <div class="sidebar-section">
+      <div class="sidebar-label">Navigazione</div>
+      <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" id="nav-schedule" onclick="showTab('schedule')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Piano di Studio
+      </div>
+      <div class="nav-item" id="nav-voti" onclick="showTab('voti')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Registro Voti
+      </div>
+      <div class="nav-item" id="nav-pomodoro" onclick="showTab('pomodoro')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pomodoro Focus
+      </div>
+      <div class="nav-item" id="nav-tools" onclick="showTab('tools')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+        Strumenti AI
+      </div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="sidebar-subjects" id="sidebarSubjects">
+      <div class="sidebar-label">Materie</div>
+      <div id="subjectList" style="font-size:12px;color:var(--muted);padding:6px">Nessuna scadenza.</div>
+    </div>
+
+    <!-- Footer hints -->
+    <div class="sidebar-footer">
+      <div class="kbd-hint"><span class="kbd">N</span> Nuova verifica</div>
+      <div class="kbd-hint"><span class="kbd">F</span> Focus mode</div>
+      <div class="kbd-hint"><span class="kbd">S</span> Sync JSON</div>
+    </div>
+  </aside>
+
+  <!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+  <div class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="tab-btn active" id="tab-dashboard" onclick="showTab('dashboard')">Dashboard</button>
+      <button class="tab-btn" id="tab-schedule" onclick="showTab('schedule')">Piano</button>
+      <button class="tab-btn" id="tab-voti" onclick="showTab('voti')">Voti</button>
+      <button class="tab-btn" id="tab-pomodoro" onclick="showTab('pomodoro')">Pomodoro</button>
+      <button class="tab-btn" id="tab-tools" onclick="showTab('tools')">Strumenti AI</button>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost btn-sm no-print" onclick="printSchedule()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+          Stampa
+        </button>
+        <button class="btn btn-primary btn-sm no-print" onclick="openAddTest()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuova Verifica
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div class="tab-panel active fade" id="panel-dashboard">
+        <div id="dangerBanners"></div>
+
+        <!-- Stats -->
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <div class="stat-label">Verifiche</div>
+            <div class="stat-value purple" id="statTests">0</div>
+            <div class="stat-sub">in programma</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Task Oggi</div>
+            <div class="stat-value green" id="statTasks">0</div>
+            <div class="stat-sub">da completare</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Media Voti</div>
+            <div class="stat-value yellow" id="statMedia">—</div>
+            <div class="stat-sub">su 10</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value red" id="statStreak">0🔥</div>
+            <div class="stat-sub">giorni consecutivi</div>
+          </div>
         </div>
+
+        <!-- Main dash grid -->
+        <div class="dash-grid">
+          <!-- Left: tests + today tasks -->
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <!-- Prossime Verifiche -->
+            <div class="card">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+                <div>
+                  <div class="section-title">Prossime Verifiche</div>
+                  <div style="font-size:12px;color:var(--muted)">Le tue scadenze imminenti</div>
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="openAddTest()">+ Aggiungi</button>
+              </div>
+              <div id="testList"><div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Nessuna verifica aggiunta. Inizia aggiungendone una!</div></div>
+            </div>
+
+            <!-- Task di oggi -->
+            <div class="card">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+                <div class="section-title">Task di Oggi</div>
+                <div style="font-size:12px;color:var(--muted)">Livello energia:</div>
+                <div class="energy-bar" style="margin-top:8px;margin-bottom:0">
+                  <div class="energy-chip" id="eChip-low" onclick="setEnergy('low')">🔴 Bassa</div>
+                  <div class="energy-chip" id="eChip-med" onclick="setEnergy('med')">🟡 Media</div>
+                  <div class="energy-chip" id="eChip-high" onclick="setEnergy('high')">🟢 Alta</div>
+                </div>
+              </div>
+              <div id="todayTasks" style="padding:12px"></div>
+            </div>
+          </div>
+
+          <!-- Right: global progress + quick planner -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <!-- Global progress -->
+            <div class="card card-p">
+              <div class="section-title" style="margin-bottom:14px">Progresso Globale</div>
+              <div id="subjectProgress"></div>
+            </div>
+
+            <!-- Master planner CTA -->
+            <div class="card card-p" style="border-color:rgba(124,58,237,0.3);background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(139,92,246,0.04))">
+              <div style="font-size:22px;margin-bottom:10px">🧠</div>
+              <div class="section-title">Master Planner AI</div>
+              <div style="font-size:12px;color:var(--muted);margin:6px 0 14px;line-height:1.6">Genera un piano di studio intelligente per tutte le tue verifiche con un solo click.</div>
+              <button class="btn btn-primary" style="width:100%" onclick="generateMasterPrompt()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+                Genera Piano Completo
+              </button>
+            </div>
+
+            <!-- Pomodoro quick -->
+            <div class="card card-p">
+              <div class="section-title" style="margin-bottom:14px">Pomodoro</div>
+              <div style="text-align:center">
+                <div style="font-size:36px;font-weight:800;color:var(--neon);letter-spacing:-1px" id="dashPomTime">25:00</div>
+                <div style="font-size:11px;color:var(--muted);margin:4px 0 14px" id="dashPomPhase">Focus</div>
+                <div style="display:flex;gap:8px;justify-content:center">
+                  <button class="btn btn-primary btn-sm" onclick="showTab('pomodoro');pomStart()">▶ Avvia</button>
+                  <button class="btn btn-ghost btn-sm" onclick="showTab('pomodoro')">Apri</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ PIANO DI STUDIO ══ -->
+      <div class="tab-panel fade" id="panel-schedule">
+        <div class="schedule-header">
+          <div>
+            <div class="section-title">Piano di Studio</div>
+            <div style="font-size:13px;color:var(--muted)">Trascina i task tra i giorni per riorganizzare</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="generateMasterPrompt()">🧠 Genera Piano AI</button>
+            <button class="btn btn-ghost btn-sm" onclick="showSyncModal()">📥 Sync JSON</button>
+            <button class="btn btn-danger btn-sm" onclick="clearPlan()">🗑 Cancella Piano</button>
+          </div>
+        </div>
+        <div id="scheduleContent">
+          <div class="empty-schedule">
+            <div class="emoji">📅</div>
+            <h3>Nessun piano di studio ancora</h3>
+            <p>Aggiungi le tue verifiche, genera il prompt AI<br>e incolla la risposta di Gemini per creare il tuo calendario.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ VOTI ══ -->
+      <div class="tab-panel fade" id="panel-voti">
+        <div class="voti-grid">
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+              <div>
+                <div class="section-title">Registro Voti</div>
+                <div style="font-size:13px;color:var(--muted)">Tieni traccia dei tuoi risultati</div>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openAddVoto()">+ Aggiungi Voto</button>
+            </div>
+            <div class="card" id="votiTable">
+              <div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Nessun voto registrato.</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:16px">Statistiche</div>
+            <div class="card card-p" style="margin-bottom:14px">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Media Generale</div>
+              <div style="font-size:34px;font-weight:800;color:var(--neon)" id="mediaGenerale">—</div>
+              <div style="margin-top:10px">
+                <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Obiettivo</div>
+                <input type="number" class="input" min="1" max="10" step="0.1" value="7" id="obiettivoInput" onchange="renderVoti()" placeholder="Es. 7.5" style="width:100px">
+              </div>
+            </div>
+            <div class="card card-p" id="mediaPerMateria">
+              <div style="font-size:12px;color:var(--muted)">Aggiunge voti per vedere le statistiche</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ POMODORO ══ -->
+      <div class="tab-panel fade" id="panel-pomodoro">
+        <div class="pom-center">
+          <div style="text-align:center;margin-bottom:28px">
+            <div class="section-title">Pomodoro Focus</div>
+            <div style="font-size:13px;color:var(--muted)">Lavora con intervalli concentrati</div>
+          </div>
+
+          <!-- Ring -->
+          <div class="pom-ring-wrap">
+            <svg width="220" height="220" viewBox="0 0 220 220">
+              <circle id="pomRingBg" cx="110" cy="110" r="90" fill="none" stroke-width="10"/>
+              <circle id="pomRingFill" cx="110" cy="110" r="90" fill="none" stroke-width="10"/>
+            </svg>
+            <div class="pom-time-display">
+              <div class="pom-time" id="pomDisplay">25:00</div>
+              <div class="pom-phase" id="pomPhaseLabel">Focus</div>
+            </div>
+          </div>
+
+          <!-- Dots -->
+          <div class="pom-dots" id="pomDots" style="margin-bottom:20px">
+            <div class="pom-dot"></div><div class="pom-dot"></div>
+            <div class="pom-dot"></div><div class="pom-dot"></div>
+          </div>
+
+          <!-- Controls -->
+          <div class="pom-controls">
+            <button class="btn btn-ghost" onclick="pomReset()">↺ Reset</button>
+            <button class="btn btn-primary" style="min-width:120px" id="pomBtn" onclick="pomToggle()">▶ Avvia</button>
+            <button class="btn btn-ghost" onclick="enterFocusMode()">🎯 Focus Mode</button>
+          </div>
+
+          <!-- Settings -->
+          <div class="card card-p" style="text-align:left">
+            <div style="font-size:13px;font-weight:700;margin-bottom:14px">Impostazioni Timer</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+              <div class="field">
+                <label class="label">Focus (min)</label>
+                <input type="number" class="input" id="pomFocusMin" value="25" min="1" max="60" onchange="pomApplySettings()">
+              </div>
+              <div class="field">
+                <label class="label">Pausa (min)</label>
+                <input type="number" class="input" id="pomBreakMin" value="5" min="1" max="30" onchange="pomApplySettings()">
+              </div>
+              <div class="field">
+                <label class="label">Pausa Lunga</label>
+                <input type="number" class="input" id="pomLongMin" value="15" min="1" max="60" onchange="pomApplySettings()">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ STRUMENTI AI ══ -->
+      <div class="tab-panel fade" id="panel-tools">
+        <div class="section-title" style="margin-bottom:4px">Strumenti AI</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Genera prompt per Gemini e sincronizza i tuoi piani</div>
+
+        <div class="tools-grid">
+          <!-- Sync JSON -->
+          <div class="tool-card" style="grid-column:1/-1">
+            <div class="tool-title">📥 Sincronizza JSON da Gemini</div>
+            <div class="tool-desc">Incolla qui la risposta JSON di Gemini per importare il piano di studio.</div>
+            <textarea class="input" id="jsonInput" placeholder='Incolla il JSON qui... Es: {"materia":"...","piani":[{"data":"...","task":"..."}]} oppure {"piano":[...]}'></textarea>
+            <div style="display:flex;gap:8px;margin-top:12px">
+              <button class="btn btn-primary" onclick="syncJSON()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                Importa Piano
+              </button>
+              <button class="btn btn-ghost" onclick="document.getElementById('jsonInput').value=''">✕ Pulisci</button>
+            </div>
+          </div>
+
+          <!-- Master Planner -->
+          <div class="tool-card">
+            <div class="tool-title">🧠 Master Planner</div>
+            <div class="tool-desc">Genera un unico prompt per Gemini con tutte le verifiche. Otterrai un calendario integrato che bilancia il carico di studio.</div>
+            <button class="btn btn-primary" style="width:100%" onclick="generateMasterPrompt()">Genera Prompt Globale</button>
+          </div>
+
+          <!-- Import registro -->
+          <div class="tool-card">
+            <div class="tool-title">📋 Import da Registro</div>
+            <div class="tool-desc">Incolla testo grezzo dal registro elettronico. Il sistema cercherà di riconoscere materia e data automaticamente.</div>
+            <textarea class="input" id="importRaw" placeholder="Es: Verifica di Matematica il 15/03&#10;Interrogazione Storia 20 marzo..."></textarea>
+            <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="importFromText()">📤 Importa</button>
+          </div>
+
+          <!-- Flashcard generator -->
+          <div class="tool-card">
+            <div class="tool-title">🃏 Genera Flashcard</div>
+            <div class="tool-desc">Seleziona una materia e genera un prompt per Gemini per creare flashcard di studio interattive.</div>
+            <div class="field">
+              <label class="label">Materia</label>
+              <select class="input" id="flashcardSubject"><option value="">Seleziona...</option></select>
+            </div>
+            <button class="btn btn-ghost" style="width:100%" onclick="generateFlashcards()">🃏 Copia Prompt</button>
+          </div>
+
+          <!-- Prompt log -->
+          <div class="tool-card">
+            <div class="tool-title">📝 Log Prompt Copiati</div>
+            <div class="tool-desc">Cronologia degli ultimi prompt generati. Clicca per ricopiare.</div>
+            <div id="promptLog" style="max-height:200px;overflow-y:auto">
+              <div style="font-size:12px;color:var(--muted)">Nessun prompt ancora.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══════════════════ FOCUS OVERLAY ═══════════════════ -->
+<div id="focusOverlay">
+  <div style="text-align:center;margin-bottom:28px">
+    <div style="font-size:13px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase">Focus Mode</div>
+  </div>
+  <div class="pom-ring-wrap" style="margin-bottom:20px">
+    <svg width="220" height="220" viewBox="0 0 220 220">
+      <circle id="focusRingBg" cx="110" cy="110" r="90" fill="none" stroke="#1f1f35" stroke-width="10"/>
+      <circle id="focusRingFill" cx="110" cy="110" r="90" fill="none" stroke="#7c3aed" stroke-width="10" stroke-linecap="round" stroke-dasharray="565" stroke-dashoffset="0" style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.5s linear"/>
+    </svg>
+    <div class="pom-time-display">
+      <div class="pom-time" id="focusDisplay">25:00</div>
+      <div class="pom-phase" id="focusPhaseLabel">Focus</div>
     </div>
-
-    <script>
-        // ===== DATA LAYER =====
-        const STORAGE_KEY = 'studyflow_data';
-
-        function loadData() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                return raw ? JSON.parse(raw) : { tests: [] };
-            } catch {
-                return { tests: [] };
-            }
-        }
-
-        function saveData(data) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
-
-        // ===== TOAST =====
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            toast.className = `toast toast-${type} show`;
-            const icons = { success: '✓', error: '✕', info: 'ℹ' };
-            toast.innerHTML = `<span>${icons[type] || ''}</span> ${message}`;
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-
-        // ===== MODALS =====
-        function openModal(id) {
-            document.getElementById(id).classList.add('show');
-        }
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('show');
-        }
-        function closeModalOnOverlay(e, id) {
-            if (e.target === e.currentTarget) closeModal(id);
-        }
-        function openAddTestModal() {
-            document.getElementById('testSubject').value = '';
-            document.getElementById('testDate').value = '';
-            document.getElementById('testNotes').value = '';
-            openModal('addTestModal');
-            setTimeout(() => document.getElementById('testSubject').focus(), 100);
-        }
-        function openImportModal() {
-            populateImportSelect();
-            document.getElementById('jsonInput').value = '';
-            openModal('importModal');
-        }
-
-        function populateImportSelect() {
-            const data = loadData();
-            const select = document.getElementById('importTestSelect');
-            select.innerHTML = '<option value="">— Scegli un test —</option>';
-            data.tests.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.id;
-                opt.textContent = `${t.subject} — ${formatDate(t.date)}`;
-                select.appendChild(opt);
-            });
-        }
-
-        // ===== SIDEBAR TOGGLE =====
-        function toggleSidebar() {
-            const sb = document.getElementById('sidebar');
-            const ov = document.getElementById('mobileOverlay');
-            sb.classList.toggle('open');
-            ov.classList.toggle('show');
-        }
-
-        // ===== UTILITIES =====
-        function generateId() {
-            return 'test_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-        }
-
-        function formatDate(dateStr) {
-            const d = new Date(dateStr + 'T00:00:00');
-            return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-
-        function formatDateShort(dateStr) {
-            const d = new Date(dateStr + 'T00:00:00');
-            return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
-        }
-
-        function daysUntil(dateStr) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const target = new Date(dateStr + 'T00:00:00');
-            return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
-        }
-
-        function getTodayStr() {
-            const d = new Date();
-            return d.toISOString().split('T')[0];
-        }
-
-        function getDaysLabel(days) {
-            if (days < 0) return 'Passato';
-            if (days === 0) return 'Oggi!';
-            if (days === 1) return 'Domani';
-            return `${days} giorni`;
-        }
-
-        function getUrgencyClass(days) {
-            if (days < 0) return 'badge-success';
-            if (days <= 1) return 'badge-danger';
-            if (days <= 3) return 'badge-warning';
-            return 'badge-purple';
-        }
-
-        // ===== CORE ACTIONS =====
-        function addTest() {
-            const subject = document.getElementById('testSubject').value.trim();
-            const date = document.getElementById('testDate').value;
-            const notes = document.getElementById('testNotes').value.trim();
-
-            if (!subject || !date) {
-                showToast('Compila materia e data!', 'error');
-                return;
-            }
-
-            const data = loadData();
-            data.tests.push({
-                id: generateId(),
-                subject,
-                date,
-                notes,
-                plan: null,
-                completedTasks: {},
-                createdAt: new Date().toISOString()
-            });
-            saveData(data);
-            closeModal('addTestModal');
-            showToast(`Test di ${subject} aggiunto!`);
-            render();
-        }
-
-        function deleteTest(id) {
-            if (!confirm('Sei sicuro di voler eliminare questo test e il suo piano?')) return;
-            const data = loadData();
-            data.tests = data.tests.filter(t => t.id !== id);
-            saveData(data);
-            showToast('Test eliminato', 'info');
-            if (state.activeTestId === id) state.activeTestId = null;
-            render();
-        }
-
-        function copyPrompt(testId) {
-            const data = loadData();
-            const test = data.tests.find(t => t.id === testId);
-            if (!test) return;
-
-            const today = new Date().toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
-            const testDate = formatDate(test.date);
-
-            const prompt = `Sono uno studente. Ho un test di ${test.subject} il giorno ${testDate}. Oggi è il ${today}.${test.notes ? ' Argomenti: ' + test.notes + '.' : ''} Crea un piano di studio dettagliato suddiviso per giorni. Rispondi ESCLUSIVAMENTE con un codice JSON strutturato così: {"materia": "...", "piani": [{"data": "YYYY-MM-DD", "task": "..."}]}`;
-
-            navigator.clipboard.writeText(prompt).then(() => {
-                showToast('Prompt copiato negli appunti! Incollalo in Gemini', 'success');
-            }).catch(() => {
-                // Fallback
-                const ta = document.createElement('textarea');
-                ta.value = prompt;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                showToast('Prompt copiato!', 'success');
-            });
-        }
-
-        function importJSON() {
-            const testId = document.getElementById('importTestSelect').value;
-            const raw = document.getElementById('jsonInput').value.trim();
-
-            if (!testId) {
-                showToast('Seleziona un test!', 'error');
-                return;
-            }
-            if (!raw) {
-                showToast('Incolla il JSON!', 'error');
-                return;
-            }
-
-            let parsed;
-            try {
-                // Try to extract JSON from markdown code blocks
-                let jsonStr = raw;
-                const codeBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
-                if (codeBlockMatch) {
-                    jsonStr = codeBlockMatch[1].trim();
-                }
-                parsed = JSON.parse(jsonStr);
-            } catch {
-                showToast('JSON non valido. Controlla il formato!', 'error');
-                return;
-            }
-
-            if (!parsed.piani || !Array.isArray(parsed.piani)) {
-                showToast('Il JSON deve contenere un array "piani"!', 'error');
-                return;
-            }
-
-            const data = loadData();
-            const test = data.tests.find(t => t.id === testId);
-            if (!test) return;
-
-            test.plan = {
-                materia: parsed.materia || test.subject,
-                piani: parsed.piani.map((p, i) => ({
-                    id: `task_${Date.now()}_${i}`,
-                    data: p.data || '',
-                    task: p.task || ''
-                }))
-            };
-            test.completedTasks = {};
-            saveData(data);
-            closeModal('importModal');
-            state.activeTestId = testId;
-            showToast(`Piano importato! ${parsed.piani.length} task caricati`, 'success');
-            render();
-        }
-
-        function toggleTask(testId, taskId) {
-            const data = loadData();
-            const test = data.tests.find(t => t.id === testId);
-            if (!test) return;
-            if (!test.completedTasks) test.completedTasks = {};
-            test.completedTasks[taskId] = !test.completedTasks[taskId];
-            saveData(data);
-            render();
-        }
-
-        function exportData() {
-            const data = loadData();
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `studyflow-backup-${getTodayStr()}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('Dati esportati!', 'success');
-        }
-
-        // ===== STATE =====
-        const state = { activeTestId: null };
-
-        // ===== RENDERING =====
-        function render() {
-            renderSidebar();
-            renderMainContent();
-            renderStats();
-            lucide.createIcons();
-        }
-
-        function renderStats() {
-            const data = loadData();
-            const total = data.tests.length;
-            const withPlans = data.tests.filter(t => t.plan).length;
-            const completed = data.tests.filter(t => {
-                if (!t.plan) return false;
-                const tasks = t.plan.piani;
-                return tasks.every(p => t.completedTasks[p.id]);
-            }).length;
-
-            document.getElementById('statTotal').textContent = total;
-            document.getElementById('statPlans').textContent = withPlans;
-            document.getElementById('statDone').textContent = completed;
-        }
-
-        function renderSidebar() {
-            const data = loadData();
-            const container = document.getElementById('sidebarTests');
-
-            if (data.tests.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-8 px-4">
-                        <div class="w-12 h-12 rounded-full bg-[var(--accent-glow)] flex items-center justify-center mx-auto mb-3">
-                            <i data-lucide="book-open" class="w-5 h-5 text-[var(--accent)]"></i>
-                        </div>
-                        <p class="text-sm text-[var(--text-secondary)]">Nessun test aggiunto</p>
-                        <p class="text-xs text-[var(--text-secondary)] mt-1">Clicca "Nuovo Test" per iniziare</p>
-                    </div>
-                `;
-                return;
-            }
-
-            // Sort by date
-            const sorted = [...data.tests].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            container.innerHTML = sorted.map(test => {
-                const days = daysUntil(test.date);
-                const isActive = state.activeTestId === test.id;
-                const hasPlan = !!test.plan;
-                const isDanger = days <= 1 && days >= 0 && !hasPlan;
-
-                let progressPct = 0;
-                if (hasPlan) {
-                    const total = test.plan.piani.length;
-                    const done = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
-                    progressPct = total > 0 ? Math.round((done / total) * 100) : 0;
-                }
-
-                return `
-                    <div class="sidebar-item rounded-lg px-3 py-3 mb-1 cursor-pointer ${isActive ? 'active' : ''} ${isDanger ? 'pulse-danger' : ''}"
-                         onclick="setActiveTest('${test.id}')">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-medium text-sm truncate flex-1">${test.subject}</span>
-                            ${isDanger ? '<span class="badge badge-danger text-[9px] py-0.5 px-1.5">PERICOLO</span>' : ''}
-                        </div>
-                        <div class="flex items-center gap-2 mb-1.5">
-                            <span class="text-xs text-[var(--text-secondary)]">${formatDateShort(test.date)}</span>
-                            <span class="badge ${getUrgencyClass(days)} text-[9px] py-0.5">${getDaysLabel(days)}</span>
-                            ${hasPlan ? '<span class="badge badge-success text-[9px] py-0.5">Piano ✓</span>' : ''}
-                        </div>
-                        ${hasPlan ? `
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${progressPct}%"></div>
-                            </div>
-                            <p class="text-[10px] text-[var(--text-secondary)] mt-1">${progressPct}% completato</p>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function setActiveTest(id) {
-            state.activeTestId = state.activeTestId === id ? null : id;
-            render();
-        }
-
-        function renderMainContent() {
-            const data = loadData();
-            const container = document.getElementById('mainContent');
-
-            if (state.activeTestId) {
-                const test = data.tests.find(t => t.id === state.activeTestId);
-                if (test) {
-                    renderTestDetail(test, container);
-                    return;
-                }
-            }
-
-            renderDashboard(data, container);
-        }
-
-        function renderDashboard(data, container) {
-            const title = document.getElementById('mainTitle');
-            const subtitle = document.getElementById('mainSubtitle');
-            title.textContent = 'Dashboard';
-            subtitle.textContent = 'Panoramica dei tuoi test e piani di studio';
-
-            if (data.tests.length === 0) {
-                container.innerHTML = `
-                    <div class="animate-in flex flex-col items-center justify-center py-20">
-                        <div class="empty-state-icon">
-                            <i data-lucide="rocket" class="w-10 h-10 text-[var(--accent)]"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-2">Inizia il tuo viaggio! 🚀</h3>
-                        <p class="text-[var(--text-secondary)] text-center max-w-md mb-6">
-                            Ogni grande risultato inizia con un piano. Aggiungi il tuo primo test e lascia che l'AI ti aiuti a prepararti al meglio.
-                        </p>
-                        <button class="btn-primary" onclick="openAddTestModal()">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                            Aggiungi il primo test
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            // Upcoming tests sorted by date
-            const sorted = [...data.tests].sort((a, b) => new Date(a.date) - new Date(b.date));
-            const upcoming = sorted.filter(t => daysUntil(t.date) >= 0);
-            const past = sorted.filter(t => daysUntil(t.date) < 0);
-
-            let html = '';
-
-            // Urgent tests alert
-            const urgentTests = upcoming.filter(t => daysUntil(t.date) <= 1 && !t.plan);
-            if (urgentTests.length > 0) {
-                html += `
-                    <div class="card p-4 mb-6 glow-danger border-red-500/30 animate-in">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-[var(--danger-glow)] flex items-center justify-center">
-                                <i data-lucide="alert-triangle" class="w-5 h-5 text-[var(--danger)]"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-[var(--danger)]">⚠️ PERICOLO</h3>
-                                <p class="text-sm text-[var(--text-secondary)]">Test imminenti senza piano di studio!</p>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            ${urgentTests.map(t => `
-                                <div class="flex items-center justify-between bg-[var(--danger-glow)] rounded-lg px-4 py-3">
-                                    <div class="flex items-center gap-3">
-                                        <span class="font-medium">${t.subject}</span>
-                                        <span class="badge badge-danger">${getDaysLabel(daysUntil(t.date))}</span>
-                                    </div>
-                                    <button class="btn-ghost text-xs" onclick="copyPrompt('${t.id}')">
-                                        <i data-lucide="copy" class="w-3 h-3"></i>
-                                        Prepara Piano
-                                    </button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Today's tasks across all plans
-            const today = getTodayStr();
-            const todayTasks = [];
-            data.tests.forEach(test => {
-                if (test.plan) {
-                    test.plan.piani.forEach(p => {
-                        if (p.data === today) {
-                            todayTasks.push({ test, task: p });
-                        }
-                    });
-                }
-            });
-
-            if (todayTasks.length > 0) {
-                html += `
-                    <div class="card p-5 mb-6 animate-in glow-purple">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-10 h-10 rounded-xl bg-[var(--accent-glow)] flex items-center justify-center">
-                                <i data-lucide="calendar-check" class="w-5 h-5 text-[var(--accent)]"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold">Programma di Oggi</h3>
-                                <p class="text-sm text-[var(--text-secondary)]">${todayTasks.length} task da completare</p>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            ${todayTasks.map(({test, task}) => {
-                                const done = test.completedTasks[task.id];
-                                return `
-                                    <div class="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-primary)] cursor-pointer hover:bg-[var(--bg-hover)] transition-colors"
-                                         onclick="toggleTask('${test.id}', '${task.id}')">
-                                        <input type="checkbox" class="task-check" ${done ? 'checked' : ''} onclick="event.stopPropagation(); toggleTask('${test.id}', '${task.id}')">
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm ${done ? 'task-done' : ''}">${task.task}</p>
-                                            <p class="text-xs text-[var(--text-secondary)]">${test.subject}</p>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Test cards
-            html += `
-                <div class="mb-4 flex items-center justify-between">
-                    <h3 class="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-2">
-                        <i data-lucide="calendar" class="w-4 h-4"></i>
-                        Test in Arrivo
-                    </h3>
-                </div>
-            `;
-
-            if (upcoming.length === 0) {
-                html += `
-                    <div class="card p-8 text-center animate-in">
-                        <p class="text-[var(--text-secondary)]">Nessun test in programma. Aggiungine uno!</p>
-                    </div>
-                `;
-            } else {
-                html += `<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">`;
-                upcoming.forEach((test, i) => {
-                    const days = daysUntil(test.date);
-                    const hasPlan = !!test.plan;
-                    let progressPct = 0;
-                    if (hasPlan) {
-                        const total = test.plan.piani.length;
-                        const done = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
-                        progressPct = total > 0 ? Math.round((done / total) * 100) : 0;
-                    }
-
-                    html += `
-                        <div class="card p-4 cursor-pointer animate-in ${days <= 1 && !hasPlan ? 'border-red-500/30' : ''}"
-                             style="animation-delay: ${i * 0.05}s"
-                             onclick="setActiveTest('${test.id}')">
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-semibold truncate">${test.subject}</h4>
-                                    <p class="text-xs text-[var(--text-secondary)] mt-0.5">${formatDate(test.date)}</p>
-                                </div>
-                                <span class="badge ${getUrgencyClass(days)} text-[9px]">${getDaysLabel(days)}</span>
-                            </div>
-                            ${test.notes ? `<p class="text-xs text-[var(--text-secondary)] mb-3 line-clamp-2">${test.notes}</p>` : ''}
-                            ${hasPlan ? `
-                                <div class="progress-bar mb-1.5">
-                                    <div class="progress-fill" style="width: ${progressPct}%"></div>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-[10px] text-[var(--text-secondary)]">${progressPct}% completato</span>
-                                    <span class="badge badge-success text-[9px] py-0.5">Piano ✓</span>
-                                </div>
-                            ` : `
-                                <div class="flex items-center gap-2 mt-2">
-                                    <button class="btn-ghost text-[11px] flex-1 justify-center" onclick="event.stopPropagation(); copyPrompt('${test.id}')">
-                                        <i data-lucide="copy" class="w-3 h-3"></i>
-                                        Prepara Piano
-                                    </button>
-                                </div>
-                            `}
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-
-            // Past tests
-            if (past.length > 0) {
-                html += `
-                    <div class="mt-8 mb-4">
-                        <h3 class="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-2">
-                            <i data-lucide="history" class="w-4 h-4"></i>
-                            Test Passati
-                        </h3>
-                    </div>
-                    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                `;
-                past.forEach((test, i) => {
-                    const hasPlan = !!test.plan;
-                    let progressPct = 0;
-                    if (hasPlan) {
-                        const total = test.plan.piani.length;
-                        const done = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
-                        progressPct = total > 0 ? Math.round((done / total) * 100) : 0;
-                    }
-                    html += `
-                        <div class="card p-4 cursor-pointer opacity-60 hover:opacity-80 transition-opacity animate-in"
-                             style="animation-delay: ${i * 0.05}s"
-                             onclick="setActiveTest('${test.id}')">
-                            <div class="flex items-start justify-between mb-2">
-                                <h4 class="font-semibold truncate">${test.subject}</h4>
-                                <span class="badge badge-success text-[9px]">Passato</span>
-                            </div>
-                            <p class="text-xs text-[var(--text-secondary)]">${formatDate(test.date)}</p>
-                            ${hasPlan ? `
-                                <div class="progress-bar mt-2">
-                                    <div class="progress-fill" style="width: ${progressPct}%"></div>
-                                </div>
-                                <span class="text-[10px] text-[var(--text-secondary)]">${progressPct}% completato</span>
-                            ` : ''}
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            }
-
-            // Motivational quote
-            const quotes = [
-                "Il successo è la somma di piccoli sforzi ripetuti giorno dopo giorno. — Robert Collier",
-                "La disciplina è il ponte tra gli obiettivi e i risultati. — Jim Rohn",
-                "Non contare i giorni, fai che i giorni contino. — Muhammad Ali",
-                "Lo studio è come remare controcorrente: se smetti, ti trascina indietro. — Proverbio cinese",
-                "Il momento migliore per iniziare a studiare era ieri. Il secondo momento migliore è adesso.",
-                "La preparazione è la chiave del successo. — Alexander Graham Bell",
-            ];
-            const quote = quotes[Math.floor(Math.random() * quotes.length)];
-
-            html += `
-                <div class="mt-8 gradient-line"></div>
-                <div class="mt-6 mb-4 text-center animate-in">
-                    <p class="text-sm text-[var(--text-secondary)] italic">"${quote}"</p>
-                </div>
-            `;
-
-            container.innerHTML = html;
-        }
-
-        function renderTestDetail(test, container) {
-            const title = document.getElementById('mainTitle');
-            const subtitle = document.getElementById('mainSubtitle');
-            const days = daysUntil(test.date);
-            const hasPlan = !!test.plan;
-
-            title.textContent = test.subject;
-            subtitle.textContent = `Test del ${formatDate(test.date)} — ${getDaysLabel(days)}`;
-
-            let progressPct = 0;
-            let completedCount = 0;
-            let totalCount = 0;
-            if (hasPlan) {
-                totalCount = test.plan.piani.length;
-                completedCount = test.plan.piani.filter(p => test.completedTasks[p.id]).length;
-                progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-            }
-
-            let html = `
-                <div class="animate-in">
-                    <!-- Header card -->
-                    <div class="card p-5 mb-6 ${days <= 1 && !hasPlan ? 'glow-danger border-red-500/30' : 'glow-purple'}">
-                        <div class="flex flex-wrap items-start justify-between gap-4">
-                            <div class="flex items-center gap-4">
-                                <div class="w-14 h-14 rounded-2xl ${days <= 1 && !hasPlan ? 'bg-[var(--danger-glow)]' : 'bg-[var(--accent-glow)]'} flex items-center justify-center">
-                                    <i data-lucide="${days <= 1 && !hasPlan ? 'alert-triangle' : 'book-open'}" class="w-7 h-7 ${days <= 1 && !hasPlan ? 'text-[var(--danger)]' : 'text-[var(--accent)]'}"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold">${test.subject}</h3>
-                                    <div class="flex items-center gap-2 mt-1">
-                                        <span class="text-sm text-[var(--text-secondary)]">${formatDate(test.date)}</span>
-                                        <span class="badge ${getUrgencyClass(days)}">${getDaysLabel(days)}</span>
-                                        ${days <= 1 && !hasPlan ? '<span class="badge badge-danger">⚠️ PERICOLO</span>' : ''}
-                                    </div>
-                                    ${test.notes ? `<p class="text-sm text-[var(--text-secondary)] mt-1">${test.notes}</p>` : ''}
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                ${!hasPlan ? `
-                                    <button class="btn-primary" onclick="copyPrompt('${test.id}')">
-                                        <i data-lucide="copy" class="w-4 h-4"></i>
-                                        Prepara Piano AI
-                                    </button>
-                                ` : ''}
-                                <button class="btn-ghost" onclick="openImportModal(); setTimeout(() => document.getElementById('importTestSelect').value='${test.id}', 50);">
-                                    <i data-lucide="clipboard-paste" class="w-4 h-4"></i>
-                                    Importa JSON
-                                </button>
-                                <button class="btn-danger" onclick="deleteTest('${test.id}')">
-                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
-                        ${hasPlan ? `
-                            <div class="mt-4 pt-4 border-t border-[var(--border)]">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="text-sm text-[var(--text-secondary)]">Progresso piano di studio</span>
-                                    <span class="text-sm font-bold text-[var(--accent)]">${progressPct}%</span>
-                                </div>
-                                <div class="progress-bar h-2">
-                                    <div class="progress-fill" style="width: ${progressPct}%"></div>
-                                </div>
-                                <p class="text-xs text-[var(--text-secondary)] mt-1">${completedCount}/${totalCount} task completati</p>
-                            </div>
-                        ` : ''}
-                    </div>
-            `;
-
-            if (hasPlan) {
-                // Schedule view
-                const today = getTodayStr();
-                const piani = [...test.plan.piani].sort((a, b) => a.data.localeCompare(b.data));
-
-                // Group by date
-                const grouped = {};
-                piani.forEach(p => {
-                    if (!grouped[p.data]) grouped[p.data] = [];
-                    grouped[p.data].push(p);
-                });
-
-                html += `
-                    <div class="mb-4 flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider flex items-center gap-2">
-                            <i data-lucide="calendar-days" class="w-4 h-4"></i>
-                            Piano di Studio — ${test.plan.materia}
-                        </h3>
-                        <button class="btn-danger text-xs" onclick="removePlan('${test.id}')">
-                            <i data-lucide="x" class="w-3 h-3"></i>
-                            Rimuovi Piano
-                        </button>
-                    </div>
-                    <div class="space-y-3">
-                `;
-
-                Object.entries(grouped).forEach(([date, tasks]) => {
-                    const isToday = date === today;
-                    const isPast = daysUntil(date) < 0;
-                    const dayName = new Date(date + 'T00:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
-                    const dayTasksDone = tasks.filter(t => test.completedTasks[t.id]).length;
-                    const allDone = dayTasksDone === tasks.length;
-
-                    html += `
-                        <div class="day-card card p-4 ${isToday ? 'today' : ''} ${isPast ? 'past' : ''}">
-                            <div class="flex items-center justify-between mb-3">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl ${isToday ? 'bg-green-500/15' : allDone ? 'bg-purple-500/15' : 'bg-[var(--bg-primary)]'} flex items-center justify-center">
-                                        <i data-lucide="${isToday ? 'star' : allDone ? 'check-circle' : 'calendar'}" class="w-5 h-5 ${isToday ? 'text-green-400' : allDone ? 'text-purple-400' : 'text-[var(--text-secondary)]'}"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold capitalize">${dayName}</h4>
-                                        <p class="text-xs text-[var(--text-secondary)]">${dayTasksDone}/${tasks.length} completati</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    ${isToday ? '<span class="badge badge-success">Oggi</span>' : ''}
-                                    ${allDone ? '<span class="badge badge-purple">Completato ✓</span>' : ''}
-                                </div>
-                            </div>
-                            <div class="space-y-2 ml-1">
-                                ${tasks.map(task => {
-                                    const done = test.completedTasks[task.id];
-                                    return `
-                                        <div class="flex items-start gap-3 p-2.5 rounded-lg hover:bg-[var(--bg-primary)] transition-colors cursor-pointer"
-                                             onclick="toggleTask('${test.id}', '${task.id}')">
-                                            <input type="checkbox" class="task-check mt-0.5" ${done ? 'checked' : ''} onclick="event.stopPropagation(); toggleTask('${test.id}', '${task.id}')">
-                                            <p class="text-sm leading-relaxed ${done ? 'task-done' : ''}">${task.task}</p>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    `;
-                });
-
-                html += `</div>`;
-            } else {
-                // No plan - show instructions
-                html += `
-                    <div class="card p-8 text-center">
-                        <div class="empty-state-icon">
-                            <i data-lucide="sparkles" class="w-10 h-10 text-[var(--accent)]"></i>
-                        </div>
-                        <h3 class="text-xl font-bold mb-2">Nessun piano ancora</h3>
-                        <p class="text-[var(--text-secondary)] max-w-lg mx-auto mb-6">
-                            Genera un piano di studio con l'AI! Clicca "Prepara Piano AI" per copiare un prompt ottimizzato per Gemini, 
-                            poi incolla la risposta JSON cliccando "Importa JSON".
-                        </p>
-                        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-                            <button class="btn-primary" onclick="copyPrompt('${test.id}')">
-                                <i data-lucide="copy" class="w-4 h-4"></i>
-                                Copia Prompt per Gemini
-                            </button>
-                            <button class="btn-ghost" onclick="openImportModal(); setTimeout(() => document.getElementById('importTestSelect').value='${test.id}', 50);">
-                                <i data-lucide="clipboard-paste" class="w-4 h-4"></i>
-                                Ho già un JSON
-                            </button>
-                        </div>
-                        <div class="mt-8 text-left max-w-md mx-auto">
-                            <p class="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3">Come funziona:</p>
-                            <div class="space-y-3">
-                                <div class="flex items-start gap-3">
-                                    <div class="w-6 h-6 rounded-full bg-[var(--accent-glow)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <span class="text-xs font-bold text-[var(--accent)]">1</span>
-                                    </div>
-                                    <p class="text-sm text-[var(--text-secondary)]">Clicca "Copia Prompt" per copiare il prompt ottimizzato</p>
-                                </div>
-                                <div class="flex items-start gap-3">
-                                    <div class="w-6 h-6 rounded-full bg-[var(--accent-glow)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <span class="text-xs font-bold text-[var(--accent)]">2</span>
-                                    </div>
-                                    <p class="text-sm text-[var(--text-secondary)]">Incolla il prompt in Gemini e attendi la risposta JSON</p>
-                                </div>
-                                <div class="flex items-start gap-3">
-                                    <div class="w-6 h-6 rounded-full bg-[var(--accent-glow)] flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <span class="text-xs font-bold text-[var(--accent)]">3</span>
-                                    </div>
-                                    <p class="text-sm text-[var(--text-secondary)]">Copia il JSON e incollalo qui con "Importa JSON"</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            html += `</div>`;
-            container.innerHTML = html;
-        }
-
-        function removePlan(testId) {
-            if (!confirm('Vuoi rimuovere il piano di studio? I progressi saranno persi.')) return;
-            const data = loadData();
-            const test = data.tests.find(t => t.id === testId);
-            if (test) {
-                test.plan = null;
-                test.completedTasks = {};
-                saveData(data);
-                showToast('Piano rimosso', 'info');
-                render();
-            }
-        }
-
-        // ===== KEYBOARD SHORTCUTS =====
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
-            }
-            if (e.key === 'n' && !e.ctrlKey && !e.metaKey && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-                e.preventDefault();
-                openAddTestModal();
-            }
+  </div>
+  <div style="display:flex;gap:12px">
+    <button class="btn btn-ghost" onclick="pomToggle()">⏸ Pausa</button>
+    <button class="btn btn-ghost" onclick="exitFocusMode()">✕ Esci</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ TOAST ═══════════════════ -->
+<div id="toastContainer"></div>
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+<div id="modalContainer"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   STATE & STORAGE
+═══════════════════════════════════════════════════════════ */
+const COLORS = ['#7c3aed','#3b82f6','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4','#84cc16'];
+
+let state = {
+  tests: [],       // {id, subject, date, color}
+  plan: [],        // {date, tasks:[{id,text,subject,done,energy}]}
+  voti: [],        // {id, subject, voto, data, note}
+  streak: 0,
+  lastActive: null,
+  energy: 'high',
+  pomodoroCount: 0,
+  promptLog: [],
+  obiettivo: 7
+};
+
+function loadState() {
+  const s = localStorage.getItem('studyos_v3');
+  if (s) {
+    try { state = { ...state, ...JSON.parse(s) }; } catch(e) {}
+  }
+}
+function saveState() {
+  localStorage.setItem('studyos_v3', JSON.stringify(state));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TAB NAVIGATION
+═══════════════════════════════════════════════════════════ */
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+
+  const panel = document.getElementById('panel-' + name);
+  if (panel) { panel.classList.add('active'); panel.classList.add('fade'); }
+  const tab = document.getElementById('tab-' + name);
+  if (tab) tab.classList.add('active');
+  const nav = document.getElementById('nav-' + name);
+  if (nav) nav.classList.add('active');
+
+  if (name === 'schedule') renderSchedule();
+  if (name === 'voti') renderVoti();
+  if (name === 'tools') renderTools();
+  if (name === 'dashboard') renderDashboard();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════════ */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.toLocaleDateString('it-IT', { weekday:'short', day:'numeric', month:'short' });
+}
+
+function daysUntil(dateStr) {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const target = new Date(dateStr + 'T00:00:00');
+  return Math.ceil((target - now) / 86400000);
+}
+
+function getCountdownLabel(days) {
+  if (days < 0) return { text: 'Passata', cls: 'countdown-warn' };
+  if (days === 0) return { text: 'OGGI!', cls: 'countdown-danger' };
+  if (days === 1) return { text: 'Domani!', cls: 'countdown-danger' };
+  if (days <= 3) return { text: `${days} giorni`, cls: 'countdown-warn' };
+  if (days <= 7) return { text: `${days} giorni`, cls: 'countdown-ok' };
+  return { text: `${days} giorni`, cls: 'countdown-ok' };
+}
+
+function getSubjectColor(subject) {
+  const t = state.tests.find(t => t.subject.toLowerCase() === subject.toLowerCase());
+  if (t) return t.color;
+  const idx = subject.charCodeAt(0) % COLORS.length;
+  return COLORS[idx];
+}
+
+function toast(msg, icon = '✅') {
+  const c = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span class="toast-icon">${icon}</span><span>${msg}</span>`;
+  c.appendChild(el);
+  setTimeout(() => { el.style.animation = 'toastIn 0.3s ease reverse'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Copiato negli appunti!', '📋')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast('Copiato!', '📋');
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════════════════ */
+function openModal(html) {
+  const c = document.getElementById('modalContainer');
+  c.innerHTML = `<div class="modal-overlay" onclick="closeModalOnBg(event)">${html}</div>`;
+}
+function closeModalOnBg(e) { if (e.target.classList.contains('modal-overlay')) closeModal(); }
+function closeModal() { document.getElementById('modalContainer').innerHTML = ''; }
+
+/* ── ADD TEST MODAL ── */
+function openAddTest(editId = null) {
+  const test = editId ? state.tests.find(t => t.id === editId) : null;
+  const colorOpts = COLORS.map((c, i) =>
+    `<div onclick="selColor(this,'${c}')" style="width:22px;height:22px;border-radius:50%;background:${c};cursor:pointer;border:2px solid ${test && test.color===c ? 'white' : 'transparent'};transition:border-color 0.15s" data-color="${c}"></div>`
+  ).join('');
+
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-title">${test ? 'Modifica Verifica' : 'Nuova Verifica'}</div>
+      <div class="modal-sub">Inserisci i dettagli della tua verifica</div>
+      <div class="field">
+        <label class="label">Materia *</label>
+        <input type="text" class="input" id="mSubject" placeholder="Es. Matematica, Storia..." value="${test ? test.subject : ''}">
+      </div>
+      <div class="field">
+        <label class="label">Data Verifica *</label>
+        <input type="date" class="input" id="mDate" value="${test ? test.date : ''}">
+      </div>
+      <div class="field">
+        <label class="label">Colore</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0" id="colorPicker">${colorOpts}</div>
+        <input type="hidden" id="mColor" value="${test ? test.color : COLORS[0]}">
+      </div>
+      <div class="field">
+        <label class="label">Note (opzionale)</label>
+        <input type="text" class="input" id="mNote" placeholder="Es. Capitoli 1-5, con libri..." value="${test ? (test.note||'') : ''}">
+      </div>
+      <div class="modal-footer">
+        ${editId ? `<button class="btn btn-danger btn-sm" onclick="deleteTest('${editId}')">Elimina</button>` : ''}
+        <button class="btn btn-ghost" onclick="closeModal()">Annulla</button>
+        <button class="btn btn-primary" onclick="saveTest('${editId || ''}')">Salva</button>
+      </div>
+    </div>
+  `);
+}
+
+function selColor(el, color) {
+  document.querySelectorAll('#colorPicker > div').forEach(d => d.style.borderColor = 'transparent');
+  el.style.borderColor = 'white';
+  document.getElementById('mColor').value = color;
+}
+
+function saveTest(editId) {
+  const subject = document.getElementById('mSubject').value.trim();
+  const date = document.getElementById('mDate').value;
+  const color = document.getElementById('mColor').value;
+  const note = document.getElementById('mNote').value.trim();
+
+  if (!subject || !date) { toast('Compila materia e data!', '⚠️'); return; }
+
+  if (editId) {
+    const idx = state.tests.findIndex(t => t.id === editId);
+    if (idx !== -1) state.tests[idx] = { ...state.tests[idx], subject, date, color, note };
+  } else {
+    state.tests.push({ id: uid(), subject, date, color, note });
+  }
+
+  saveState(); closeModal(); renderAll();
+  toast(editId ? 'Verifica aggiornata' : 'Verifica aggiunta!', '📚');
+}
+
+function deleteTest(id) {
+  state.tests = state.tests.filter(t => t.id !== id);
+  saveState(); closeModal(); renderAll();
+  toast('Verifica eliminata', '🗑');
+}
+
+/* ── ADD VOTO MODAL ── */
+function openAddVoto() {
+  const subjects = [...new Set([...state.tests.map(t => t.subject), ...state.voti.map(v => v.subject)])];
+  const opts = subjects.map(s => `<option>${s}</option>`).join('');
+
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-title">Aggiungi Voto</div>
+      <div class="modal-sub">Registra un risultato scolastico</div>
+      <div class="field">
+        <label class="label">Materia</label>
+        <input type="text" class="input" id="vSubject" placeholder="Es. Matematica" list="vSubjList">
+        <datalist id="vSubjList">${opts}</datalist>
+      </div>
+      <div class="field">
+        <label class="label">Voto (1-10)</label>
+        <input type="number" class="input" id="vVoto" min="1" max="10" step="0.5" placeholder="Es. 8">
+      </div>
+      <div class="field">
+        <label class="label">Data</label>
+        <input type="date" class="input" id="vData" value="${today()}">
+      </div>
+      <div class="field">
+        <label class="label">Note (opzionale)</label>
+        <input type="text" class="input" id="vNote" placeholder="Es. Scritto, Orale...">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Annulla</button>
+        <button class="btn btn-primary" onclick="saveVoto()">Salva</button>
+      </div>
+    </div>
+  `);
+}
+
+function saveVoto() {
+  const subject = document.getElementById('vSubject').value.trim();
+  const voto = parseFloat(document.getElementById('vVoto').value);
+  const data = document.getElementById('vData').value;
+  const note = document.getElementById('vNote').value.trim();
+
+  if (!subject || isNaN(voto) || voto < 1 || voto > 10) { toast('Compila materia e voto (1-10)!', '⚠️'); return; }
+
+  state.voti.push({ id: uid(), subject, voto, data, note });
+  saveState(); closeModal(); renderVoti();
+  toast('Voto salvato!', '📝');
+}
+
+/* ── SYNC MODAL ── */
+function showSyncModal() { showTab('tools'); }
+
+/* ── OVERWRITE MODAL ── */
+function showOverwriteModal(newPlan) {
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-title">Piano esistente rilevato</div>
+      <div class="modal-sub">Hai già un piano di studio attivo. Cosa vuoi fare?</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-danger" style="justify-content:flex-start" onclick="overwritePlan(${JSON.stringify(newPlan).replace(/"/g,'&quot;')}, 'replace')">
+          🗑 Sostituisci — Elimina il vecchio e usa solo il nuovo
+        </button>
+        <button class="btn btn-yellow" style="justify-content:flex-start" onclick="overwritePlan(${JSON.stringify(newPlan).replace(/"/g,'&quot;')}, 'merge')">
+          🔀 Unisci — Aggiungi i nuovi task a quelli esistenti
+        </button>
+        <button class="btn btn-ghost" onclick="closeModal()">✕ Annulla</button>
+      </div>
+    </div>
+  `);
+}
+
+function overwritePlan(newPlan, mode) {
+  if (mode === 'replace') {
+    state.plan = newPlan;
+  } else {
+    // Merge: for each new day, add tasks not already present
+    newPlan.forEach(newDay => {
+      const existing = state.plan.find(d => d.date === newDay.date);
+      if (existing) {
+        newDay.tasks.forEach(t => {
+          const dup = existing.tasks.find(et => et.text === t.text && et.subject === t.subject);
+          if (!dup) existing.tasks.push(t);
         });
+      } else {
+        state.plan.push(newDay);
+      }
+    });
+    state.plan.sort((a,b) => a.date.localeCompare(b.date));
+  }
+  saveState(); closeModal(); showTab('schedule');
+  toast('Piano aggiornato!', '📅');
+}
 
-        // ===== INIT =====
-        document.addEventListener('DOMContentLoaded', () => {
-            render();
-        });
+/* ═══════════════════════════════════════════════════════════
+   RENDER DASHBOARD
+═══════════════════════════════════════════════════════════ */
+function renderDashboard() {
+  updateStats();
+  renderTestList();
+  renderTodayTasks();
+  renderSubjectProgress();
+  renderDangerBanners();
+  renderSidebar();
+}
 
-        // Init Lucide
-        lucide.createIcons();
-    </script>
+function updateStats() {
+  const todayStr = today();
+  const upcoming = state.tests.filter(t => t.date >= todayStr);
+  document.getElementById('statTests').textContent = upcoming.length;
+
+  // Today tasks
+  const todayPlan = state.plan.find(d => d.date === todayStr);
+  const todayCount = todayPlan ? todayPlan.tasks.filter(t => !t.done).length : 0;
+  document.getElementById('statTasks').textContent = todayCount;
+
+  // Media
+  if (state.voti.length > 0) {
+    const avg = (state.voti.reduce((s,v) => s + v.voto, 0) / state.voti.length).toFixed(1);
+    document.getElementById('statMedia').textContent = avg;
+    document.getElementById('mediaGenerale').textContent = avg;
+  }
+
+  document.getElementById('statStreak').textContent = state.streak + '🔥';
+  document.getElementById('sStreak').textContent = state.streak;
+
+  // Global progress
+  const allTasks = state.plan.flatMap(d => d.tasks);
+  const doneTasks = allTasks.filter(t => t.done).length;
+  const pct = allTasks.length ? Math.round(doneTasks / allTasks.length * 100) : 0;
+  document.getElementById('sProgress').textContent = pct + '%';
+  document.getElementById('sProgressBar').style.width = pct + '%';
+  document.getElementById('globalProgressPct') && (document.getElementById('globalProgressPct').textContent = pct + '%');
+}
+
+function renderTestList() {
+  const el = document.getElementById('testList');
+  const todayStr = today();
+  const sorted = [...state.tests].sort((a,b) => a.date.localeCompare(b.date));
+
+  if (!sorted.length) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Nessuna verifica. Aggiungine una!</div>';
+    return;
+  }
+
+  el.innerHTML = sorted.map(t => {
+    const days = daysUntil(t.date);
+    const { text, cls } = getCountdownLabel(days);
+    const hasPlan = state.plan.some(d => d.tasks.some(tk => tk.subject === t.subject));
+    const danger = days <= 2 && !hasPlan && days >= 0;
+
+    return `
+      <div class="test-item">
+        <div class="test-color-bar" style="background:${t.color}"></div>
+        <div class="test-info">
+          <div class="test-subject">${t.subject}</div>
+          <div class="test-date">${formatDate(t.date)} ${t.note ? '· ' + t.note : ''}</div>
+        </div>
+        ${danger ? '<span class="badge badge-red" style="flex-shrink:0">⚠️ PERICOLO</span>' : ''}
+        <div class="test-countdown ${cls}">${text}</div>
+        <div class="test-actions">
+          <button class="btn btn-ghost btn-sm" onclick="copySinglePrompt('${t.id}')" title="Prepara piano AI">🧠</button>
+          <button class="btn btn-ghost btn-sm" onclick="openAddTest('${t.id}')" title="Modifica">✏️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTodayTasks() {
+  const el = document.getElementById('todayTasks');
+  const todayStr = today();
+  const todayPlan = state.plan.find(d => d.date === todayStr);
+
+  const energyMap = { low: 1, med: 2, high: 3 };
+  const eLevel = energyMap[state.energy] || 3;
+
+  if (!todayPlan || !todayPlan.tasks.length) {
+    el.innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--muted)">
+        <div style="font-size:32px;margin-bottom:10px">✨</div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Nessun task per oggi</div>
+        <div style="font-size:12px;margin-top:4px">Genera un piano AI o è un giorno di riposo meritat!</div>
+      </div>`;
+    return;
+  }
+
+  // Filter by energy
+  const filtered = todayPlan.tasks.filter(t => {
+    const te = energyMap[t.energy] || 2;
+    return te <= eLevel;
+  });
+
+  if (!filtered.length) {
+    el.innerHTML = `<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px">Nessun task per questo livello di energia. Prova con energia più alta!</div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map(t => {
+    const color = getSubjectColor(t.subject);
+    return `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);margin-bottom:6px;background:var(--card2);${t.done ? 'opacity:0.5' : ''}">
+        <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTask('${todayStr}','${t.id}',this)"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:var(--text);line-height:1.4;${t.done ? 'text-decoration:line-through;color:var(--muted)' : ''}">${t.text}</div>
+          <div style="font-size:10px;color:${color};margin-top:3px;font-weight:600">${t.subject}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderSubjectProgress() {
+  const el = document.getElementById('subjectProgress');
+  if (!state.tests.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted)">Nessuna materia.</div>';
+    return;
+  }
+
+  const subjects = [...new Set(state.tests.map(t => t.subject))];
+  el.innerHTML = subjects.map(subj => {
+    const allT = state.plan.flatMap(d => d.tasks.filter(t => t.subject === subj));
+    const done = allT.filter(t => t.done).length;
+    const pct = allT.length ? Math.round(done / allT.length * 100) : 0;
+    const color = getSubjectColor(subj);
+    return `
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></div>
+            <span style="font-size:12px;font-weight:600">${subj}</span>
+          </div>
+          <span style="font-size:11px;color:var(--muted)">${done}/${allT.length} · ${pct}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pct}%;background:${color}"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderDangerBanners() {
+  const el = document.getElementById('dangerBanners');
+  const todayStr = today();
+  const dangers = state.tests.filter(t => {
+    const days = daysUntil(t.date);
+    const hasPlan = state.plan.some(d => d.tasks.some(tk => tk.subject === t.subject));
+    return days >= 0 && days <= 2 && !hasPlan;
+  });
+
+  el.innerHTML = dangers.map(t => `
+    <div class="danger-banner">
+      <span style="font-size:20px">🚨</span>
+      <div>
+        <strong>${t.subject}</strong> è tra ${daysUntil(t.date) === 0 ? 'OGGI' : daysUntil(t.date) + ' giorni'} e non hai ancora un piano!
+        <span onclick="generateMasterPrompt()" style="color:var(--neon);cursor:pointer;text-decoration:underline;margin-left:8px;font-size:12px">Genera piano →</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderSidebar() {
+  const el = document.getElementById('subjectList');
+  const todayStr = today();
+  const sorted = [...state.tests].sort((a,b) => a.date.localeCompare(b.date)).filter(t => t.date >= todayStr);
+
+  if (!sorted.length) { el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:6px">Nessuna scadenza.</div>'; return; }
+
+  el.innerHTML = sorted.map(t => `
+    <div class="subject-pill" onclick="showTab('dashboard')">
+      <div class="subject-dot" style="background:${t.color}"></div>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.subject}</span>
+      <span style="font-size:10px;color:var(--muted)">${daysUntil(t.date)}g</span>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER SCHEDULE
+═══════════════════════════════════════════════════════════ */
+function renderSchedule() {
+  const el = document.getElementById('scheduleContent');
+  if (!state.plan.length) {
+    el.innerHTML = `
+      <div class="empty-schedule">
+        <div class="emoji">📅</div>
+        <h3>Nessun piano di studio ancora</h3>
+        <p>Aggiungi le tue verifiche, genera il prompt AI<br>e incolla la risposta di Gemini per creare il tuo calendario.</p>
+        <button class="btn btn-primary" style="margin-top:20px" onclick="generateMasterPrompt()">🧠 Genera Piano AI</button>
+      </div>`;
+    return;
+  }
+
+  const todayStr = today();
+  // Sort plan by date
+  const sorted = [...state.plan].sort((a,b) => a.date.localeCompare(b.date));
+
+  el.innerHTML = `<div class="schedule-grid" id="schedGrid">${sorted.map(day => {
+    const isToday = day.date === todayStr;
+    const done = day.tasks.filter(t => t.done).length;
+    const pct = day.tasks.length ? Math.round(done / day.tasks.length * 100) : 0;
+    const dayNames = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+    const d = new Date(day.date + 'T12:00:00');
+    const dayName = dayNames[d.getDay()];
+    const dateFormatted = d.toLocaleDateString('it-IT', { day:'numeric', month:'short' });
+
+    return `
+      <div class="day-card ${isToday ? 'today' : ''}" data-date="${day.date}">
+        <div class="day-card-header">
+          <div>
+            <div class="day-name">${dayName} ${isToday ? '— Oggi' : ''}</div>
+            <div class="day-date">${dateFormatted} · ${done}/${day.tasks.length} task</div>
+          </div>
+          ${isToday ? '<div class="day-badge today-badge">OGGI</div>' : `<div class="day-badge">${pct}%</div>`}
+        </div>
+        <div class="day-progress"><div class="day-progress-fill" style="width:${pct}%"></div></div>
+        <div class="day-tasks sortable-zone" data-date="${day.date}" id="zone-${day.date}">
+          ${day.tasks.map(t => renderTaskItem(day.date, t)).join('')}
+        </div>
+      </div>`;
+  }).join('')}</div>`;
+
+  // Init SortableJS
+  document.querySelectorAll('.sortable-zone').forEach(zone => {
+    Sortable.create(zone, {
+      group: 'tasks',
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      onEnd(evt) {
+        const fromDate = evt.from.dataset.date;
+        const toDate = evt.to.dataset.date;
+        const taskId = evt.item.dataset.taskid;
+        moveTask(taskId, fromDate, toDate, evt.newIndex);
+      }
+    });
+  });
+}
+
+function renderTaskItem(date, t) {
+  const color = getSubjectColor(t.subject);
+  return `
+    <div class="task-item ${t.done ? 'done' : ''}" data-taskid="${t.id}">
+      <div class="task-check ${t.done ? 'checked' : ''}" onclick="toggleTask('${date}','${t.id}',this)"></div>
+      <div class="task-text">${t.text}</div>
+      <div class="task-subject-badge" style="background:${color}22;color:${color}">${t.subject}</div>
+    </div>`;
+}
+
+function toggleTask(date, taskId, el) {
+  const day = state.plan.find(d => d.date === date);
+  if (!day) return;
+  const task = day.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  task.done = !task.done;
+  saveState();
+
+  const item = el.closest('.task-item') || el.parentElement;
+  item.classList.toggle('done', task.done);
+  el.classList.toggle('checked', task.done);
+  item.querySelector('.task-text').style.textDecoration = task.done ? 'line-through' : '';
+  item.querySelector('.task-text').style.color = task.done ? 'var(--muted)' : '';
+
+  updateStreakAndProgress();
+  updateStats();
+}
+
+function moveTask(taskId, fromDate, toDate, newIndex) {
+  const fromDay = state.plan.find(d => d.date === fromDate);
+  const toDay = state.plan.find(d => d.date === toDate);
+  if (!fromDay || !toDay) return;
+
+  const idx = fromDay.tasks.findIndex(t => t.id === taskId);
+  if (idx === -1) return;
+  const [task] = fromDay.tasks.splice(idx, 1);
+  toDay.tasks.splice(newIndex, 0, task);
+  saveState();
+  toast('Task spostato!', '✅');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER VOTI
+═══════════════════════════════════════════════════════════ */
+function renderVoti() {
+  const el = document.getElementById('votiTable');
+  const mediaEl = document.getElementById('mediaPerMateria');
+  const obiettivo = parseFloat(document.getElementById('obiettivoInput').value) || 7;
+
+  if (!state.voti.length) {
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Nessun voto. Aggiungine uno!</div>';
+    mediaEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">Nessun voto ancora.</div>';
+    document.getElementById('mediaGenerale').textContent = '—';
+    return;
+  }
+
+  // Sort by date desc
+  const sorted = [...state.voti].sort((a,b) => b.data.localeCompare(a.data));
+
+  el.innerHTML = `
+    <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 80px 80px 80px;gap:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Materia</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Voto</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em">Data</div>
+      <div></div>
+    </div>
+    ${sorted.map(v => {
+      const color = v.voto >= obiettivo ? 'var(--green)' : v.voto >= obiettivo - 1 ? 'var(--yellow)' : 'var(--red)';
+      const sColor = getSubjectColor(v.subject);
+      return `
+        <div class="grade-row">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${sColor};flex-shrink:0"></div>
+            <div>
+              <div class="grade-subject">${v.subject}</div>
+              ${v.note ? `<div style="font-size:11px;color:var(--muted)">${v.note}</div>` : ''}
+            </div>
+          </div>
+          <div class="grade-val" style="color:${color}">${v.voto}</div>
+          <div style="font-size:12px;color:var(--muted)">${formatDate(v.data)}</div>
+          <button class="btn btn-ghost btn-sm" onclick="deleteVoto('${v.id}')">✕</button>
+        </div>`;
+    }).join('')}`;
+
+  // Media generale
+  const avg = state.voti.reduce((s,v) => s + v.voto, 0) / state.voti.length;
+  document.getElementById('mediaGenerale').textContent = avg.toFixed(1);
+  document.getElementById('mediaGenerale').style.color =
+    avg >= obiettivo ? 'var(--green)' : avg >= obiettivo - 1 ? 'var(--yellow)' : 'var(--red)';
+
+  // Media per materia
+  const subjects = [...new Set(state.voti.map(v => v.subject))];
+  mediaEl.innerHTML = `<div style="font-size:13px;font-weight:700;margin-bottom:14px">Media per Materia</div>` +
+    subjects.map(subj => {
+      const voti = state.voti.filter(v => v.subject === subj);
+      const m = (voti.reduce((s,v) => s + v.voto, 0) / voti.length).toFixed(1);
+      const color = parseFloat(m) >= obiettivo ? 'var(--green)' : parseFloat(m) >= obiettivo - 1 ? 'var(--yellow)' : 'var(--red)';
+      const sColor = getSubjectColor(subj);
+      return `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--card2);border-radius:8px;border:1px solid var(--border)">
+          <div style="width:8px;height:8px;border-radius:50%;background:${sColor};flex-shrink:0"></div>
+          <div style="flex:1;font-size:12px;font-weight:600">${subj}</div>
+          <div style="font-size:16px;font-weight:800;color:${color}">${m}</div>
+        </div>`;
+    }).join('');
+}
+
+function deleteVoto(id) {
+  state.voti = state.voti.filter(v => v.id !== id);
+  saveState(); renderVoti();
+  toast('Voto eliminato', '🗑');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER TOOLS
+═══════════════════════════════════════════════════════════ */
+function renderTools() {
+  // Populate flashcard subject select
+  const sel = document.getElementById('flashcardSubject');
+  const subjects = [...new Set(state.tests.map(t => t.subject))];
+  sel.innerHTML = '<option value="">Seleziona materia...</option>' + subjects.map(s => `<option>${s}</option>`).join('');
+
+  // Render prompt log
+  renderPromptLog();
+}
+
+function renderPromptLog() {
+  const el = document.getElementById('promptLog');
+  if (!state.promptLog.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted)">Nessun prompt ancora.</div>';
+    return;
+  }
+  el.innerHTML = state.promptLog.slice(-10).reverse().map((p,i) => `
+    <div class="log-item" onclick="copyText(${JSON.stringify(p.text)})">
+      <div class="log-item-title">${p.title}</div>
+      <div class="log-item-preview">${p.text.substring(0,80)}...</div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AI PROMPT GENERATION
+═══════════════════════════════════════════════════════════ */
+
+/**
+ * Builds a smart study plan distribution.
+ * For a test N days away, it spreads study sessions across the available days,
+ * with higher frequency close to the test and rest days built in.
+ */
+function buildSmartPrompt(tests) {
+  const todayStr = today();
+  const todayDate = new Date(todayStr + 'T12:00:00');
+
+  const testLines = tests.map(t => {
+    const days = daysUntil(t.date);
+    return `- Materia: "${t.subject}" | Data verifica: ${t.date} | Giorni disponibili: ${Math.max(days, 1)}${t.note ? ` | Argomenti: ${t.note}` : ''}`;
+  }).join('\n');
+
+  return `Sei un tutor scolastico esperto in pianificazione dello studio. Devi creare un piano di studio DETTAGLIATO e INTELLIGENTE.
+
+VERIFICHE DA PREPARARE:
+${testLines}
+
+REGOLE FONDAMENTALI per la pianificazione:
+1. DISTRIBUISCI i task su TUTTI i giorni disponibili fino alla verifica, non solo su oggi e domani.
+2. Per una verifica tra 30+ giorni: studia 3-4 volte a settimana, con pause tra le sessioni.
+3. Per una verifica tra 14-29 giorni: studia 4-5 volte a settimana.
+4. Per una verifica tra 7-13 giorni: studia ogni giorno o quasi.
+5. Per una verifica tra 3-6 giorni: studia ogni giorno con ripasso finale.
+6. BILANCIA il carico: non mettere troppe materie lo stesso giorno.
+7. Il giorno PRIMA della verifica: solo ripasso leggero, niente studio pesante.
+8. Includi task con diversi livelli di energia: "low" (ripasso leggero), "med" (studio normale), "high" (studio intenso).
+9. Ogni task deve essere SPECIFICO e AZIONABILE (es. "Studia capitolo 3 - Le equazioni di secondo grado" invece di "Studia matematica").
+10. Includi sessioni di ripasso a distanza di tempo (spaced repetition).
+
+Data di oggi: ${todayStr}
+
+Rispondi ESCLUSIVAMENTE con un JSON valido, senza markdown, senza testo aggiuntivo:
+{"piano_globale":[{"date":"YYYY-MM-DD","tasks":[{"text":"Descrizione specifica del task","subject":"Nome Materia","energy":"low|med|high"}]}]}`;
+}
+
+function generateMasterPrompt() {
+  if (!state.tests.length) { toast('Aggiungi prima delle verifiche!', '⚠️'); return; }
+
+  const todayStr = today();
+  const upcoming = state.tests.filter(t => daysUntil(t.date) >= 0);
+  if (!upcoming.length) { toast('Nessuna verifica futura!', '⚠️'); return; }
+
+  const prompt = buildSmartPrompt(upcoming);
+
+  // Save to log
+  state.promptLog.push({ title: 'Piano Globale — ' + new Date().toLocaleDateString('it-IT'), text: prompt });
+  if (state.promptLog.length > 10) state.promptLog.shift();
+  saveState();
+
+  copyText(prompt);
+
+  openModal(`
+    <div class="modal-box wide">
+      <div class="modal-title">🧠 Prompt Generato!</div>
+      <div class="modal-sub">Il prompt è stato copiato negli appunti. Incollalo in Gemini e poi torna qui a incollare la risposta JSON.</div>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:11px;color:var(--muted);max-height:200px;overflow-y:auto;line-height:1.6;white-space:pre-wrap;font-family:monospace">${prompt}</div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="copyText(${JSON.stringify(prompt)})">📋 Copia di nuovo</button>
+        <button class="btn btn-primary" onclick="closeModal();showTab('tools')">📥 Vai a Sync JSON →</button>
+      </div>
+    </div>
+  `);
+}
+
+function copySinglePrompt(testId) {
+  const t = state.tests.find(x => x.id === testId);
+  if (!t) return;
+
+  const todayStr = today();
+  const prompt = `Sei un tutor scolastico esperto. Crea un piano di studio DETTAGLIATO per la seguente verifica.
+
+Materia: ${t.subject}
+Data verifica: ${t.date}
+Data di oggi: ${todayStr}
+Giorni disponibili: ${Math.max(daysUntil(t.date), 1)}
+${t.note ? 'Argomenti: ' + t.note : ''}
+
+REGOLE:
+1. Distribuisci lo studio su TUTTI i giorni disponibili, non solo i primi giorni.
+2. Alterna sessioni intensive e leggere (spaced repetition).
+3. Includi ripasso finale il giorno prima della verifica.
+4. Ogni task deve essere specifico e azionabile.
+5. Assegna un livello energia: "low" (ripasso), "med" (studio), "high" (studio intenso).
+
+Rispondi ESCLUSIVAMENTE con JSON valido:
+{"materia":"${t.subject}","piani":[{"data":"YYYY-MM-DD","task":"Descrizione specifica","energia":"low|med|high"}]}`;
+
+  state.promptLog.push({ title: `Piano ${t.subject} — ${formatDate(t.date)}`, text: prompt });
+  if (state.promptLog.length > 10) state.promptLog.shift();
+  saveState();
+
+  copyText(prompt);
+  toast(`Prompt per ${t.subject} copiato!`, '🧠');
+}
+
+function generateFlashcards() {
+  const subj = document.getElementById('flashcardSubject').value;
+  if (!subj) { toast('Seleziona una materia!', '⚠️'); return; }
+
+  const prompt = `Sei un esperto in didattica. Crea 20 flashcard per studiare "${subj}".
+
+Rispondi ESCLUSIVAMENTE con JSON:
+{"materia":"${subj}","flashcards":[{"fronte":"Domanda o concetto","retro":"Risposta o spiegazione"}]}
+
+Le flashcard devono:
+- Coprire i concetti chiave della materia
+- Avere domande chiare e risposte concise
+- Includere definizioni, formule, date importanti, concetti teorici`;
+
+  state.promptLog.push({ title: `Flashcard ${subj}`, text: prompt });
+  saveState();
+  copyText(prompt);
+  toast(`Prompt flashcard per ${subj} copiato!`, '🃏');
+  renderPromptLog();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   JSON SYNC — Smart Parser
+═══════════════════════════════════════════════════════════ */
+function syncJSON() {
+  const raw = document.getElementById('jsonInput').value.trim();
+  if (!raw) { toast('Incolla prima il JSON!', '⚠️'); return; }
+
+  let data;
+  try { data = JSON.parse(raw); } catch(e) {
+    toast('JSON non valido. Controlla la sintassi.', '❌'); return;
+  }
+
+  const newPlan = parsePlanJSON(data);
+  if (!newPlan || !newPlan.length) { toast('Formato JSON non riconosciuto.', '❌'); return; }
+
+  if (state.plan.length > 0) {
+    showOverwriteModal(newPlan);
+  } else {
+    state.plan = newPlan;
+    saveState();
+    document.getElementById('jsonInput').value = '';
+    showTab('schedule');
+    toast(`Piano importato! ${newPlan.length} giorni trovati.`, '📅');
+  }
+}
+
+/**
+ * Parses multiple JSON formats:
+ * - {"piano_globale":[{date, tasks:[{text, subject, energy}]}]}  ← Master planner
+ * - {"materia":"X","piani":[{data, task, energia}]}              ← Single subject
+ * - Array of day objects
+ */
+function parsePlanJSON(data) {
+  // Format 1: Master plan
+  if (data.piano_globale && Array.isArray(data.piano_globale)) {
+    return data.piano_globale
+      .filter(d => d.date && d.tasks && d.tasks.length)
+      .map(d => ({
+        date: d.date,
+        tasks: d.tasks.map(t => ({
+          id: uid(),
+          text: t.text || t.task || '',
+          subject: t.subject || t.materia || 'Generale',
+          energy: t.energy || t.energia || 'med',
+          done: false
+        }))
+      }));
+  }
+
+  // Format 2: Single subject old format
+  if (data.materia && data.piani && Array.isArray(data.piani)) {
+    return data.piani
+      .filter(p => p.data && p.task)
+      .map(p => ({
+        date: normalizeDate(p.data),
+        tasks: [{
+          id: uid(),
+          text: p.task,
+          subject: data.materia,
+          energy: p.energia || 'med',
+          done: false
+        }]
+      }))
+      .reduce((acc, day) => {
+        const existing = acc.find(d => d.date === day.date);
+        if (existing) existing.tasks.push(...day.tasks);
+        else acc.push(day);
+        return acc;
+      }, []);
+  }
+
+  // Format 3: Array
+  if (Array.isArray(data)) {
+    return data
+      .filter(d => (d.date || d.data) && (d.tasks || d.task))
+      .map(d => ({
+        date: normalizeDate(d.date || d.data),
+        tasks: Array.isArray(d.tasks) ? d.tasks.map(t => ({
+          id: uid(),
+          text: t.text || t.task || t,
+          subject: t.subject || t.materia || 'Generale',
+          energy: t.energy || t.energia || 'med',
+          done: false
+        })) : [{ id: uid(), text: d.task, subject: d.subject || 'Generale', energy: 'med', done: false }]
+      }));
+  }
+
+  return null;
+}
+
+function normalizeDate(dateStr) {
+  if (!dateStr) return today();
+  // Handle DD/MM/YYYY
+  const it = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (it) return `${it[3]}-${it[2].padStart(2,'0')}-${it[1].padStart(2,'0')}`;
+  // Handle YYYY-MM-DD (already ok)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  return dateStr;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   IMPORT FROM TEXT (Registro Elettronico)
+═══════════════════════════════════════════════════════════ */
+function importFromText() {
+  const raw = document.getElementById('importRaw').value.trim();
+  if (!raw) { toast('Incolla prima il testo!', '⚠️'); return; }
+
+  const lines = raw.split('\n').filter(l => l.trim());
+  const imported = [];
+  const months = { gen:1,feb:2,mar:3,apr:4,mag:5,giu:6,lug:7,ago:8,set:9,ott:10,nov:11,dic:12,
+                   gennaio:1,febbraio:2,marzo:3,aprile:4,maggio:5,giugno:6,luglio:7,agosto:8,
+                   settembre:9,ottobre:10,novembre:11,dicembre:12 };
+
+  lines.forEach(line => {
+    // Try to extract date
+    let date = null;
+    const ddmm = line.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
+    if (ddmm) {
+      const year = ddmm[3] ? (ddmm[3].length === 2 ? '20'+ddmm[3] : ddmm[3]) : new Date().getFullYear();
+      date = `${year}-${ddmm[2].padStart(2,'0')}-${ddmm[1].padStart(2,'0')}`;
+    } else {
+      const monthMatch = line.match(/(\d{1,2})\s+([a-zA-Z]+)/);
+      if (monthMatch) {
+        const mKey = monthMatch[2].toLowerCase().slice(0,3);
+        const m = months[mKey] || months[monthMatch[2].toLowerCase()];
+        if (m) date = `${new Date().getFullYear()}-${String(m).padStart(2,'0')}-${monthMatch[1].padStart(2,'0')}`;
+      }
+    }
+
+    // Try to extract subject
+    const subjectWords = ['matematica','storia','italiano','inglese','fisica','chimica','biologia',
+      'scienze','geografia','arte','musica','educazione fisica','informatica','filosofia','latino',
+      'greco','economia','diritto'];
+
+    let subject = null;
+    const lLine = line.toLowerCase();
+    for (const s of subjectWords) {
+      if (lLine.includes(s)) { subject = s.charAt(0).toUpperCase() + s.slice(1); break; }
+    }
+    if (!subject) {
+      // Try to extract capitalized word
+      const cap = line.match(/(?:di|in)\s+([A-Z][a-zA-Zà-ù]+)/);
+      if (cap) subject = cap[1];
+    }
+
+    if (date && subject) {
+      imported.push({ id: uid(), subject, date, color: COLORS[imported.length % COLORS.length], note: 'Da registro' });
+    }
+  });
+
+  if (!imported.length) { toast('Nessuna verifica riconosciuta. Prova a riformattare il testo.', '⚠️'); return; }
+
+  imported.forEach(t => {
+    const dup = state.tests.find(x => x.subject === t.subject && x.date === t.date);
+    if (!dup) state.tests.push(t);
+  });
+
+  saveState(); renderAll();
+  document.getElementById('importRaw').value = '';
+  toast(`${imported.length} verifiche importate!`, '📋');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CLEAR PLAN
+═══════════════════════════════════════════════════════════ */
+function clearPlan() {
+  openModal(`
+    <div class="modal-box">
+      <div class="modal-title">Cancella Piano</div>
+      <div class="modal-sub">Sei sicuro? Questo eliminerà tutti i task e i progressi del piano di studio.</div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">Annulla</button>
+        <button class="btn btn-danger" onclick="state.plan=[];saveState();closeModal();renderSchedule();toast('Piano cancellato','🗑')">Cancella tutto</button>
+      </div>
+    </div>
+  `);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ENERGY LEVEL
+═══════════════════════════════════════════════════════════ */
+function setEnergy(level) {
+  state.energy = level;
+  saveState();
+  document.querySelectorAll('.energy-chip').forEach(c => {
+    c.className = 'energy-chip';
+    if (c.id === 'eChip-' + level) c.classList.add('sel-' + level);
+  });
+  renderTodayTasks();
+}
+
+function renderEnergyChips() {
+  document.querySelectorAll('.energy-chip').forEach(c => {
+    c.className = 'energy-chip';
+    const lvl = c.id.replace('eChip-','');
+    if (lvl === state.energy) c.classList.add('sel-' + lvl);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STREAK
+═══════════════════════════════════════════════════════════ */
+function updateStreakAndProgress() {
+  const todayStr = today();
+  const allToday = state.plan.find(d => d.date === todayStr);
+  const allDone = allToday && allToday.tasks.length > 0 && allToday.tasks.every(t => t.done);
+
+  if (allDone) {
+    if (state.lastActive !== todayStr) {
+      const yest = new Date(); yest.setDate(yest.getDate()-1);
+      const yestStr = yest.toISOString().slice(0,10);
+      state.streak = (state.lastActive === yestStr) ? state.streak + 1 : 1;
+      state.lastActive = todayStr;
+      saveState();
+      if (state.streak > 1) toast(`🔥 Streak di ${state.streak} giorni! Bravissimo!`, '🔥');
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   POMODORO
+═══════════════════════════════════════════════════════════ */
+const POM = {
+  interval: null,
+  running: false,
+  phase: 'focus', // focus | break | longbreak
+  count: 0,
+  seconds: 25 * 60,
+  total: 25 * 60
+};
+
+function pomGetSettings() {
+  return {
+    focus: (parseInt(document.getElementById('pomFocusMin')?.value) || 25) * 60,
+    brk: (parseInt(document.getElementById('pomBreakMin')?.value) || 5) * 60,
+    lng: (parseInt(document.getElementById('pomLongMin')?.value) || 15) * 60
+  };
+}
+
+function pomApplySettings() {
+  if (!POM.running) pomReset();
+}
+
+function pomReset() {
+  clearInterval(POM.interval);
+  POM.running = false;
+  POM.phase = 'focus';
+  POM.seconds = pomGetSettings().focus;
+  POM.total = POM.seconds;
+  pomUpdateUI();
+  const btn = document.getElementById('pomBtn');
+  if (btn) btn.textContent = '▶ Avvia';
+}
+
+function pomStart() {
+  if (!POM.running) { POM.running = true; pomTick(); POM.interval = setInterval(pomTick, 1000); }
+  const btn = document.getElementById('pomBtn');
+  if (btn) btn.textContent = '⏸ Pausa';
+}
+
+function pomToggle() {
+  if (POM.running) {
+    clearInterval(POM.interval); POM.running = false;
+    const btn = document.getElementById('pomBtn');
+    if (btn) btn.textContent = '▶ Riprendi';
+  } else {
+    pomStart();
+  }
+}
+
+function pomTick() {
+  POM.seconds--;
+  if (POM.seconds <= 0) {
+    pomNextPhase();
+  } else {
+    pomUpdateUI();
+  }
+}
+
+function pomNextPhase() {
+  clearInterval(POM.interval); POM.running = false;
+  const s = pomGetSettings();
+
+  if (POM.phase === 'focus') {
+    POM.count++;
+    state.pomodoroCount++;
+    saveState();
+    POM.phase = POM.count % 4 === 0 ? 'longbreak' : 'break';
+    POM.seconds = POM.count % 4 === 0 ? s.lng : s.brk;
+    toast(POM.count % 4 === 0 ? '🎉 Pausa lunga! Ottimo lavoro!' : '☕ Pausa! Stirati un po.', '⏰');
+  } else {
+    POM.phase = 'focus';
+    POM.seconds = s.focus;
+    toast('🎯 Riprendi a studiare!', '⏰');
+  }
+
+  POM.total = POM.seconds;
+  pomUpdateUI();
+  pomUpdateDots();
+}
+
+function pomUpdateUI() {
+  const m = Math.floor(POM.seconds / 60);
+  const s = POM.seconds % 60;
+  const timeStr = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const phases = { focus: 'Focus', break: 'Pausa', longbreak: 'Pausa Lunga' };
+  const phaseStr = phases[POM.phase] || 'Focus';
+
+  // Main pomodoro display
+  const disp = document.getElementById('pomDisplay');
+  const phase = document.getElementById('pomPhaseLabel');
+  const ring = document.getElementById('pomRingFill');
+  if (disp) disp.textContent = timeStr;
+  if (phase) phase.textContent = phaseStr;
+
+  // Ring
+  if (ring) {
+    const pct = POM.total > 0 ? POM.seconds / POM.total : 1;
+    ring.style.strokeDashoffset = 565 * (1 - pct);
+  }
+
+  // Focus overlay sync
+  const fd = document.getElementById('focusDisplay');
+  const fp = document.getElementById('focusPhaseLabel');
+  const fr = document.getElementById('focusRingFill');
+  if (fd) fd.textContent = timeStr;
+  if (fp) fp.textContent = phaseStr;
+  if (fr) {
+    const pct = POM.total > 0 ? POM.seconds / POM.total : 1;
+    fr.style.strokeDashoffset = 565 * (1 - pct);
+  }
+
+  // Dashboard mini
+  const dt = document.getElementById('dashPomTime');
+  const dp = document.getElementById('dashPomPhase');
+  if (dt) dt.textContent = timeStr;
+  if (dp) dp.textContent = phaseStr;
+}
+
+function pomUpdateDots() {
+  const dots = document.querySelectorAll('.pom-dot');
+  dots.forEach((d, i) => d.classList.toggle('done', i < (POM.count % 4)));
+}
+
+function enterFocusMode() {
+  document.getElementById('focusOverlay').classList.add('on');
+  if (!POM.running) pomStart();
+}
+function exitFocusMode() {
+  document.getElementById('focusOverlay').classList.remove('on');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT
+═══════════════════════════════════════════════════════════ */
+function printSchedule() {
+  showTab('schedule');
+  setTimeout(() => window.print(), 300);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+═══════════════════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'n' || e.key === 'N') { e.preventDefault(); openAddTest(); }
+  if (e.key === 'f' || e.key === 'F') { e.preventDefault(); enterFocusMode(); }
+  if (e.key === 's' || e.key === 'S') { e.preventDefault(); showTab('tools'); }
+  if (e.key === 'Escape') { closeModal(); exitFocusMode(); }
+});
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER ALL
+═══════════════════════════════════════════════════════════ */
+function renderAll() {
+  renderDashboard();
+  // Update current active tab
+  const activePanel = document.querySelector('.tab-panel.active');
+  if (activePanel) {
+    const name = activePanel.id.replace('panel-','');
+    if (name === 'schedule') renderSchedule();
+    if (name === 'voti') renderVoti();
+    if (name === 'tools') renderTools();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════ */
+loadState();
+renderAll();
+renderEnergyChips();
+pomReset();
+
+// Live countdown update every minute
+setInterval(() => {
+  if (document.getElementById('panel-dashboard').classList.contains('active')) {
+    renderTestList();
+    renderDangerBanners();
+  }
+}, 60000);
+</script>
 </body>
 </html>
